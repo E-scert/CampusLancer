@@ -4,6 +4,11 @@ const express = require("express");
 const session = require("express-session");
 const path = require("path");
 
+const authRoutes = require("./routes/authRoutes");
+const studentRoutes = require("./routes/studentRoutes");
+const businessRoutes = require("./routes/businessRoutes");
+const taskRoutes = require("./routes/taskRoutes");
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -24,6 +29,12 @@ app.use(
 // ── View engine ─────────────────────────────────────────────
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
+
+// ── Routes ──────────────────────────────────────────────────
+app.use("/", authRoutes);
+app.use("/student", studentRoutes);
+app.use("/business", businessRoutes);
+app.use("/tasks", taskRoutes);
 
 // ── Start ───────────────────────────────────────────────────
 app.listen(PORT, () => {
