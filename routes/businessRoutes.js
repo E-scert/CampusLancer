@@ -19,8 +19,14 @@ router.post(
   isBusiness,
   business.updateApplicationStatus,
 );
+
 router.post("/task/delete/:task_id", isBusiness, business.deleteTask);
 
 router.post("/feedback", isBusiness, business.postFeedback);
 
+router.post("/profile/update", isBusiness, business.updateProfile);
+
+router.get("/profile/edit", isBusiness, business.getEditProfile);
+
+router.post("/profile/delete", isBusiness, business.deleteProfile);
 module.exports = router;

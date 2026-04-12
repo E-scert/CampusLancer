@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CampusLancer — Launch Your Career</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/main.css"/>
+  <style>
+    body { background: var(--white); overflow-x: hidden; }
+
+    /* Hero */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column; justify-content: center;
+      position: relative; overflow: hidden;
+      padding: 6rem 2rem 4rem;
+    }
+    .hero-bg {
+      position: absolute; inset: 0; z-index: 0;
+      background: radial-gradient(ellipse 80% 60% at 60% 40%, #dceeff 0%, transparent 70%),
+                  radial-gradient(ellipse 50% 50% at 10% 80%, #a8ccfa 0%, transparent 60%);
+    }
+    .hero-grid {
+      position: absolute; inset: 0; z-index: 0; opacity: 0.035;
+      background-image: linear-gradient(var(--blue-600) 1px, transparent 1px),
+                        linear-gradient(90deg, var(--blue-600) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+    .hero-inner {
+      max-width: 1200px; margin: 0 auto; width: 100%;
+      position: relative; z-index: 1;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center;
+    }
+    .hero-tag {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: var(--blue-100); color: var(--blue-700);
+      padding: 0.4rem 1rem; border-radius: 999px;
+      font-size: 0.82rem; font-weight: 600; letter-spacing: 0.5px;
+      margin-bottom: 1.5rem;
+    }
+    .hero-tag-dot { width: 6px; height: 6px; background: var(--blue-500); border-radius: 50%; }
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2.4rem, 5vw, 3.8rem);
+      font-weight: 800; line-height: 1.1;
+      color: var(--blue-900);
+      margin-bottom: 1.25rem;
+      letter-spacing: -1px;
+    }
+    .hero h1 em {
+      font-style: normal; color: var(--blue-500);
+      position: relative;
+    }
+    .hero h1 em::after {
+      content: '';
+      position: absolute; bottom: 4px; left: 0; right: 0;
+      height: 3px; background: var(--blue-300); border-radius: 2px;
+    }
+    .hero-sub {
+      font-size: 1.1rem; color: var(--gray-600);
+      max-width: 480px; line-height: 1.7;
+      margin-bottom: 2.5rem;
+    }
+    .hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; }
+
+    /* Floating card */
+    .hero-visual { position: relative; }
+    .float-card {
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-lg);
+      padding: 2rem;
+      animation: float 5s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-12px); }
+    }
+    .float-card-header {
+      display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;
+    }
+    .company-logo {
+      width: 48px; height: 48px; border-radius: var(--radius-md);
+      background: var(--blue-500);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--white); font-family: var(--font-display); font-weight: 800; font-size: 1.1rem;
+    }
+    .float-card-title { font-family: var(--font-display); font-weight: 700; font-size: 1rem; color: var(--blue-900); }
+    .float-card-sub { font-size: 0.82rem; color: var(--gray-600); margin-top: 0.1rem; }
+    .float-card-skills { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+    .float-card-footer { display: flex; align-items: center; justify-content: space-between; }
+    .applicant-stack { display: flex; }
+    .applicant-stack span {
+      width: 30px; height: 30px; border-radius: 50%;
+      background: var(--blue-400); border: 2px solid var(--white);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem; font-weight: 700; color: var(--white);
+      margin-left: -8px;
+    }
+    .applicant-stack span:first-child { margin-left: 0; }
+    .applicant-count { font-size: 0.8rem; color: var(--gray-600); margin-left: 0.5rem; }
+
+    /* Mini floating cards */
+    .mini-card {
+      position: absolute;
+      background: var(--white); border: 1px solid var(--gray-200);
+      border-radius: var(--radius-lg); box-shadow: var(--shadow-md);
+      padding: 0.85rem 1.1rem;
+      display: flex; align-items: center; gap: 0.6rem;
+      font-size: 0.83rem; font-weight: 500; color: var(--gray-800);
+      animation: float 6s ease-in-out infinite;
+    }
+    .mini-card.mc1 { top: -20px; right: -30px; animation-delay: -2s; }
+    .mini-card.mc2 { bottom: 30px; left: -40px; animation-delay: -4s; }
+    .mini-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+    /* Stats row */
+    .stats-row {
+      max-width: 1200px; margin: 0 auto;
+      padding: 3rem 2rem;
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem;
+      border-top: 1px solid var(--gray-200);
+    }
+    .stat-item { text-align: center; }
+    .stat-item .num {
+      font-family: var(--font-display); font-size: 2.5rem; font-weight: 800;
+      color: var(--blue-600); line-height: 1;
+    }
+    .stat-item .lbl { font-size: 0.9rem; color: var(--gray-600); margin-top: 0.3rem; }
+
+    /* How it works */
+    .how { padding: 5rem 2rem; background: var(--blue-900); }
+    .how-inner { max-width: 1200px; margin: 0 auto; }
+    .how-title {
+      font-family: var(--font-display); font-size: 2rem; font-weight: 800;
+      color: var(--white); text-align: center; margin-bottom: 3rem;
+    }
+    .how-title span { color: var(--blue-300); }
+    .how-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; }
+    .how-card {
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: var(--radius-xl); padding: 2rem;
+      transition: all 0.3s;
+    }
+    .how-card:hover { background: rgba(255,255,255,0.1); transform: translateY(-4px); }
+    .how-num {
+      font-family: var(--font-display); font-size: 3rem; font-weight: 800;
+      color: var(--blue-400); line-height: 1; margin-bottom: 1rem; opacity: 0.6;
+    }
+    .how-card h3 { font-family: var(--font-display); font-size: 1.1rem; font-weight: 700; color: var(--white); margin-bottom: 0.5rem; }
+    .how-card p { font-size: 0.9rem; color: rgba(255,255,255,0.55); line-height: 1.6; }
+
+    /* CTA strip */
+    .cta-strip {
+      padding: 5rem 2rem;
+      background: var(--blue-50);
+      text-align: center;
+    }
+    .cta-strip h2 {
+      font-family: var(--font-display); font-size: 2.2rem; font-weight: 800;
+      color: var(--blue-900); margin-bottom: 1rem;
+    }
+    .cta-strip p { color: var(--gray-600); margin-bottom: 2rem; font-size: 1rem; }
+    .cta-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+    @media (max-width: 900px) {
+      .hero-inner { grid-template-columns: 1fr; }
+      .hero-visual { display: none; }
+      .how-grid, .stats-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <%- include('partials/header', { user: undefined }) %>
+
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-grid"></div>
+    <div class="hero-inner">
+      <div class="fade-up">
+        <div class="hero-tag"><span class="hero-tag-dot"></span> Now connecting SA students</div>
+        <h1>Real Work.<br><em>Real Experience.</em><br>Real Future.</h1>
+        <p class="hero-sub">CampusLancer matches students with businesses offering real projects. Build your portfolio, earn your stripes, and graduate job-ready.</p>
+        <div class="hero-actions">
+          <a href="/register/student" class="btn btn-primary btn-lg">I'm a Student</a>
+          <a href="/register/business" class="btn btn-outline btn-lg">I'm a Business</a>
+        </div>
+      </div>
+      <div class="hero-visual fade-up-2">
+        <div class="mini-card mc1">
+          <span class="mini-dot" style="background:#22c55e"></span> Application accepted!
+        </div>
+        <div class="float-card">
+          <div class="float-card-header">
+            <div class="company-logo">IT</div>
+            <div>
+              <div class="float-card-title">Build a REST API</div>
+              <div class="float-card-sub">InnovateTech · Remote</div>
+            </div>
+          </div>
+          <div class="float-card-skills">
+            <span class="badge badge-blue">Node.js</span>
+            <span class="badge badge-blue">MySQL</span>
+            <span class="badge badge-gray">API Design</span>
+          </div>
+          <div class="float-card-footer">
+            <div style="display:flex;align-items:center">
+              <div class="applicant-stack">
+                <span>TM</span><span>LD</span><span>AZ</span>
+              </div>
+              <span class="applicant-count">12 applied</span>
+            </div>
+            <span class="badge badge-green">Open</span>
+          </div>
+        </div>
+        <div class="mini-card mc2">
+          <span class="mini-dot" style="background:#3b82f6"></span> AI Score: 82/100
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="stats-row">
+    <div class="stat-item fade-up"><div class="num">500+</div><div class="lbl">Students registered</div></div>
+    <div class="stat-item fade-up-2"><div class="num">120+</div><div class="lbl">Tasks completed</div></div>
+    <div class="stat-item fade-up-3"><div class="num">85%</div><div class="lbl">Placement rate</div></div>
+  </div>
+
+  <section class="how">
+    <div class="how-inner">
+      <div class="how-title">How <span>CampusLancer</span> works</div>
+      <div class="how-grid">
+        <div class="how-card">
+          <div class="how-num">01</div>
+          <h3>Create your profile</h3>
+          <p>Sign up as a student or business. Connect your GitHub so our AI can analyse your skills and give you a score.</p>
+        </div>
+        <div class="how-card">
+          <div class="how-num">02</div>
+          <h3>Get matched by AI</h3>
+          <p>Our AI reads your GitHub repos, scores your skills, and recommends tasks that fit your level. No more guessing.</p>
+        </div>
+        <div class="how-card">
+          <div class="how-num">03</div>
+          <h3>Work and grow</h3>
+          <p>Apply, get accepted, submit your work, and build a real portfolio that impresses employers on day one.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-strip">
+    <h2>Ready to launch your career?</h2>
+    <p>Join thousands of SA students already getting real-world experience.</p>
+    <div class="cta-buttons">
+      <a href="/register/student" class="btn btn-primary btn-lg">Register as Student</a>
+      <a href="/register/business" class="btn btn-outline btn-lg">Post a Task</a>
+    </div>
+  </section>
+
+  <%- include('partials/footer') %>
+  <script src="/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+€•]      Œsklearn.linear_model._base”ŒLinearRegression”“”)”}”(Œ
+fit_intercept”ˆŒcopy_X”ˆŒtol”G>°Æ÷ µíŒn_jobs”NŒpositive”‰Œfeature_names_in_”Œjoblib.numpy_pickle”ŒNumpyArrayWrapper”“”)”}”(Œsubclass”Œnumpy”Œndarray”“”Œshape”K…”Œorder”ŒC”Œdtype”hŒdtype”“”ŒO8”‰ˆ‡”R”(KŒ|”NNNJÿÿÿÿJÿÿÿÿK?t”bŒ
+allow_mmap”‰Œnumpy_array_alignment_bytes”Kub€•Æ       Œnumpy._core.multiarray”Œ_reconstruct”“”Œnumpy”Œndarray”“”K …”Cb”‡”R”(KK…”hŒdtype”“”ŒO8”‰ˆ‡”R”(KŒ|”NNNJÿÿÿÿJÿÿÿÿK?t”b‰]”(Œ
+repo_count”Œstars”Œ	followers”Œaccount_age”Œ
+has_readme”et”b.•b       Œn_features_in_”KŒcoef_”h
+)”}”(hhhK…”hhhhŒf8”‰ˆ‡”R”(KŒ<”NNNJÿÿÿÿJÿÿÿÿK t”bh ˆh!Kubÿÿÿÿÿÿÿÿÿÿÿg¼7[ùõ!@Ò²Q¨¿ÉÂ?Ø~¿åw¤ö¿xûÍ{ØÐ×¿”e&@•9       Œrank_”KŒ	singular_”h
+)”}”(hhhK…”hhhh)h ˆh!KubÿÿÿÿÿËe}(P@e/òhà@{ˆò‹ž
+@æo·g\ù @¯êÊPXíå?•`       Œ
+intercept_”Œnumpy._core.multiarray”Œscalar”“”h)C`U2¾Ï0(@”†”R”Œ_sklearn_version”Œ1.8.0”ub.

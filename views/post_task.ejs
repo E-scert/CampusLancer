@@ -1,0 +1,60 @@
+<%- include('partials/header', { user: user, title: 'Post a Task' }) %>
+<style>
+  .post-wrap { max-width: 640px; margin: 0 auto; padding: 2.5rem 2rem; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+</style>
+
+<div class="post-wrap">
+  <a href="/business/dashboard" style="font-size:0.85rem;color:var(--gray-600);display:inline-flex;align-items:center;gap:0.3rem;margin-bottom:1.5rem">← Back to dashboard</a>
+
+  <div class="card fade-up">
+    <div class="section-title" style="margin-bottom:1.5rem"><span class="dot"></span> Post a New Task</div>
+
+    <% if (error) { %>
+      <div class="alert alert-error">⚠ <%= error %></div>
+    <% } %>
+
+    <form method="POST" action="/business/post-task">
+      <div class="form-group">
+        <label class="form-label">Task title</label>
+        <input type="text" name="title" class="form-input" placeholder="e.g. Build a REST API for mobile app" required/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea name="description" class="form-textarea" style="min-height:140px"
+          placeholder="Describe what needs to be done, the deliverables, and any specific requirements..." required></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Required skill</label>
+          <input type="text" name="required_skill" class="form-input" placeholder="e.g. React, Node.js, Python" required/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Min AI skill score</label>
+          <input type="number" name="min_skill_score" class="form-input" placeholder="0" min="0" max="100" value="0"/>
+          <span class="form-hint">0 = open to all skill levels</span>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Work type</label>
+          <select name="task_type" class="form-select" required>
+            <option value="remote">Remote</option>
+            <option value="on-site">On-site</option>
+            <option value="hybrid">Hybrid</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Deadline <span style="color:var(--gray-400);font-weight:400">(optional)</span></label>
+          <input type="date" name="deadline" class="form-input"/>
+        </div>
+      </div>
+      <div style="display:flex;gap:1rem;justify-content:flex-end;margin-top:0.5rem">
+        <a href="/business/dashboard" class="btn btn-ghost">Cancel</a>
+        <button type="submit" class="btn btn-primary">Post Task</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

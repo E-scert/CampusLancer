@@ -1,0 +1,69 @@
+<%- include('partials/header', { user: undefined, title: 'Student Register' }) %>
+<style>
+  .auth-wrap { min-height: calc(100vh - 68px); display:flex; align-items:center; justify-content:center; padding:3rem 1rem; background: radial-gradient(ellipse 70% 50% at 50% 0%, var(--blue-100) 0%, transparent 70%); }
+  .auth-box { width:100%; max-width:520px; background:var(--white); border:1px solid var(--gray-200); border-radius:var(--radius-xl); box-shadow:var(--shadow-lg); padding:2.5rem; }
+  .auth-back { font-size:0.85rem; color:var(--gray-600); display:inline-flex; align-items:center; gap:0.3rem; margin-bottom:1.5rem; }
+  .auth-back:hover { color:var(--blue-500); }
+  .auth-title { font-family:var(--font-display); font-size:1.6rem; font-weight:800; color:var(--blue-900); margin-bottom:0.3rem; }
+  .auth-subtitle { font-size:0.9rem; color:var(--gray-600); margin-bottom:1.75rem; }
+  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+</style>
+
+<div class="auth-wrap">
+  <div class="auth-box fade-up">
+    <a href="/register" class="auth-back">← Back</a>
+    <div class="auth-title">Student Registration</div>
+    <p class="auth-subtitle">Create your student profile and start getting discovered.</p>
+
+    <% if (error) { %>
+      <div class="alert alert-error">⚠ <%= error %></div>
+    <% } %>
+
+    <form method="POST" action="/register/student">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">First name</label>
+          <input type="text" name="first_name" class="form-input" placeholder="Thabo" required/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Last name</label>
+          <input type="text" name="last_name" class="form-input" placeholder="Mokoena" required/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Student email</label>
+        <input type="email" name="email" class="form-input" placeholder="you@students.wits.ac.za" required/>
+        <span class="form-hint">Use your institution email address</span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" name="password" class="form-input" placeholder="Min 8 characters" required minlength="8"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Institution</label>
+        <input type="text" name="institution" class="form-input" placeholder="University of the Witwatersrand" required/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Course / Qualification</label>
+        <input type="text" name="course" class="form-input" placeholder="BSc Computer Science" required/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">GitHub username <span style="color:var(--gray-400);font-weight:400">(optional but recommended)</span></label>
+        <input type="text" name="github_username" class="form-input" placeholder="your-github-username"/>
+        <span class="form-hint">Our AI will scan your repos to generate your skill score</span>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Bio</label>
+        <input type="text" name="bio" class="form-input" placeholder="Tell us about yourself..." required/>
+      </div>
+    
+      <button type="submit" class="btn btn-primary btn-full" style="margin-top:0.25rem">Create student account</button>
+      
+    </form>
+
+    <p style="text-align:center;margin-top:1.25rem;font-size:0.875rem;color:var(--gray-600)">Already registered? <a href="/login" style="color:var(--blue-500);font-weight:500">Sign in</a></p>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

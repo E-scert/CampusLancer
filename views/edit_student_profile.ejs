@@ -1,0 +1,94 @@
+<%- include('partials/header', { user: user, title: 'Edit Student Profile' }) %>
+<style>
+  .auth-wrap { 
+    min-height: calc(100vh - 68px); 
+    display:flex; 
+    align-items:center; 
+    justify-content:center; 
+    padding:3rem 1rem; 
+    background: radial-gradient(ellipse 70% 50% at 50% 0%, var(--blue-100) 0%, transparent 70%); 
+  }
+  .auth-box { 
+    width:100%; 
+    max-width:520px; 
+    background:var(--white); 
+    border:1px solid var(--gray-200); 
+    border-radius:var(--radius-xl); 
+    box-shadow:var(--shadow-lg); 
+    padding:2.5rem; 
+  }
+  .auth-back { 
+    font-size:0.85rem; 
+    color:var(--gray-600); 
+    display:inline-flex; 
+    align-items:center; 
+    gap:0.3rem; 
+    margin-bottom:1.5rem; 
+  }
+  .auth-back:hover { color:var(--blue-500); }
+  .auth-title { 
+    font-family:var(--font-display); 
+    font-size:1.6rem; 
+    font-weight:800; 
+    color:var(--blue-900); 
+    margin-bottom:0.3rem; 
+  }
+  .auth-subtitle { 
+    font-size:0.9rem; 
+    color:var(--gray-600); 
+    margin-bottom:1.75rem; 
+  }
+  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+  .form-actions { display:flex; gap:1rem; margin-top:1rem; }
+</style>
+
+<div class="auth-wrap">
+  <div class="auth-box fade-up">
+    <a href="/student/dashboard" class="auth-back">← Back to Dashboard</a>
+    <div class="auth-title">Edit Student Profile</div>
+    <p class="auth-subtitle">Update your information below to keep your profile current.</p>
+
+    <form method="POST" action="/student/profile/update">
+      <input type="hidden" name="student_id" value="<%= profile.profile_id %>"/>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">First name</label>
+          <input type="text" name="first_name" class="form-input" value="<%= profile.first_name %>" required/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Last name</label>
+          <input type="text" name="last_name" class="form-input" value="<%= profile.last_name %>" required/>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Institution</label>
+        <input type="text" name="institution" class="form-input" value="<%= profile.institution %>" required/>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Course / Qualification</label>
+        <input type="text" name="course" class="form-input" value="<%= profile.course %>" required/>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">GitHub username <span style="color:var(--gray-400);font-weight:400">(optional but recommended)</span></label>
+        <input type="text" name="github_username" class="form-input" value="<%= profile.github_username %>"/>
+        <span class="form-hint">Our AI will scan your repos to generate your skill score</span>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Bio</label>
+        <input type="text" name="bio" class="form-input" value="<%= profile.bio %>" required/>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary btn-full">Save Changes</button>
+        <a href="/student/dashboard" class="btn btn-outline btn-full">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

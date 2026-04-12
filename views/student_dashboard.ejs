@@ -1,0 +1,263 @@
+<%- include('partials/header', { user: user, title: 'My Dashboard' }) %>
+
+<div class="page-hero">
+  <div class="page-hero-inner">
+    <div style="display:flex;align-items:center;gap:1.25rem;flex-wrap:wrap">
+      <div style="width:60px;height:60px;background:rgba(255,255,255,0.15);border-radius:var(--radius-lg);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:1.3rem;font-weight:800;color:var(--white)">
+        <%= profile.first_name[0] %><%= profile.last_name[0] %>
+      </div>
+      <div>
+        <h1 style="font-size:1.6rem;margin-bottom:0.2rem"><%= profile.first_name %> </h1>
+        <p><%= profile.bio %></p>
+        <p><%= profile.institution %> · <%= profile.course %></p>
+        <% if (profile.github_username) { %>
+          <p style="opacity:0.7;font-size:0.85rem;margin-top:0.2rem">github.com/<%= profile.github_username %></p>
+        <% } %>
+
+        <!-- Profile action buttons under the profile info -->
+        <div style="margin-top:0.75rem;display:flex;gap:0.75rem">
+          <a href="/student/profile/edit" class="btn btn-outline btn-sm">Edit Profile</a>
+          <form method="POST" action="/student/profile/delete" 
+                onsubmit="return confirm('Are you sure you want to delete your account? This cannot be undone.')"
+                style="margin:0">
+            <input type="hidden" name="student_id" value="<%= profile.profile_id %>"/>
+            <button type="submit" class="btn btn-danger btn-sm">Delete Profile</button>
+          </form>
+        </div>
+      </div>
+
+      <div style="margin-left:auto;text-align:center">
+        <div class="score-ring" style="--pct:<%= profile.ai_skill_score %>">
+          <span><%= profile.ai_skill_score %></span>
+        </div>
+        <div style="font-size:0.75rem;color:rgba(255,255,255,0.6);margin-top:0.4rem">AI Score</div>
+        <% if (profile.github_username) { %>
+          <form method="POST" action="/student/rescan-github" style="margin-top:0.5rem">
+            <button type="submit" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;padding:0.3rem 0.8rem;border-radius:999px;font-size:0.72rem;cursor:pointer;font-family:var(--font-body)">
+              ↻ Rescan GitHub
+            </button>
+          </form>
+        <% } else { %>
+          <div style="font-size:0.72rem;color:rgba(255,255,255,0.45);margin-top:0.4rem">No GitHub linked</div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="page">
+
+  <!-- Stats row -->
+  <div class="grid-3 fade-up" style="margin-bottom:2.5rem">
+    <div class="stat-card">
+      <div class="stat-label">Applications</div>
+      <div class="stat-value"><%= applications.length %></div>
+      <div class="stat-sub">Tasks applied to</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Accepted</div>
+      <div class="stat-value"><%= applications.filter(a => a.status === 'accepted').length %></div>
+      <div class="stat-sub">Active opportunities</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Skill score</div>
+      <div class="stat-value"><%= profile.ai_skill_score %><span style="font-size:1rem;color:var(--gray-400)">/100</span></div>
+      <div class="stat-sub">Based on GitHub analysis</div>
+    </div>
+  </div>
+
+  <!-- AI Analysis — Languages + Suggestions -->
+  <% if (languages.length > 0 || suggestions.length > 0) { %>
+  <div class="fade-up" style="margin-bottom:2.5rem">
+    <div class="section-title"><span class="dot"></span> AI GitHub Analysis</div>
+    <div class="grid-2">
+
+      <!-- Languages -->
+      <% if (languages.length > 0) { %>
+      <div class="card">
+        <div style="font-family:var(--font-display);font-weight:700;font-size:1rem;color:var(--blue-900);margin-bottom:1.25rem">
+          Your Top Languages
+        </div>
+        <div style="display:flex;flex-direction:column;gap:0.85rem">
+          <% languages.forEach((lang, i) => { %>
+            <div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.3rem">
+                <div style="display:flex;align-items:center;gap:0.5rem">
+                  <span style="font-weight:600;font-size:0.9rem;color:var(--blue-900)"><%= lang.name %></span>
+                  <span style="font-size:0.75rem;color:var(--gray-400)"><%= lang.count %> repo<%= lang.count !== 1 ? 's' : '' %></span>
+                </div>
+                <span class="badge <%= lang.demand === 'Very High' ? 'badge-green' : lang.demand === 'High' ? 'badge-blue' : lang.demand === 'Growing' ? 'badge-amber' : 'badge-gray' %>">
+                  <%= lang.demand %> demand
+                </span>
+              </div>
+              <!-- Progress bar -->
+              <div style="height:6px;background:var(--gray-100);border-radius:999px;overflow:hidden">
+                <!-- <div style="height:100%;width: <%= Math.min(100, (lang.count / languages[0].count) * 100) %>%;background:var(--blue-<%= i === 0 ? '500' : i === 1 ? '400' : '300' %>);border-radius:999px;transition:width 0.6s ease"></div> -->
+              </div>
+              <div style="font-size:0.75rem;color:var(--gray-500);margin-top:0.25rem"><%= lang.jobs %></div>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+      <% } %>
+
+      <!-- Suggestions -->
+      <% if (suggestions.length > 0) { %>
+      <div class="card" style="background:var(--blue-50);border-color:var(--blue-200)">
+        <div style="font-family:var(--font-display);font-weight:700;font-size:1rem;color:var(--blue-900);margin-bottom:1.25rem">
+          🤖 AI Suggestions To Improve
+        </div>
+        <div style="display:flex;flex-direction:column;gap:0.85rem">
+          <% suggestions.forEach(s => { %>
+            <div style="display:flex;align-items:flex-start;gap:0.75rem;padding:0.75rem;background:var(--white);border-radius:var(--radius-md);border:1px solid var(--blue-200)">
+              <span style="color:var(--blue-500);font-size:1rem;flex-shrink:0;margin-top:0.05rem">→</span>
+              <span style="font-size:0.875rem;color:var(--gray-700);line-height:1.5"><%= s %></span>
+            </div>
+          <% }) %>
+        </div>
+      </div>
+      <% } %>
+
+    </div>
+  </div>
+  <% } else if (!profile.github_username) { %>
+  <div class="card fade-up" style="background:var(--blue-50);border-color:var(--blue-200);margin-bottom:2.5rem;text-align:center;padding:2rem">
+    <div style="font-size:2rem;margin-bottom:0.75rem">🔗</div>
+    <div style="font-family:var(--font-display);font-weight:700;color:var(--blue-900);margin-bottom:0.5rem">Connect your GitHub to unlock AI analysis</div>
+    <p style="font-size:0.875rem;color:var(--gray-600)">Add your GitHub username to see your top languages, skill score, and personalised suggestions on what to learn next.</p>
+  </div>
+  <% } %>
+
+  <!-- AI Recommendations -->
+  <div class="fade-up-2" style="margin-bottom:2.5rem">
+    <div class="section-title"><span class="dot"></span> AI Recommended Tasks</div>
+    <% if (recommended.length === 0) { %>
+      <div class="empty">
+        <div class="empty-icon">🤖</div>
+        <h3>No recommendations yet</h3>
+        <p>Add your GitHub username so our AI can score your skills and suggest matching tasks.</p>
+      </div>
+    <% } else { %>
+      <div class="grid-auto">
+        <% recommended.forEach(task => { %>
+          <div class="task-card">
+            <div>
+              <div class="task-card-title"><%= task.title %></div>
+              <div class="task-card-company"><%= task.company_name %></div>
+            </div>
+            <p style="font-size:0.87rem;color:var(--gray-600);line-height:1.5"><%= task.description.substring(0, 100) %>...</p>
+            <div class="task-card-footer">
+              <div style="display:flex;gap:0.4rem;flex-wrap:wrap">
+                <span class="badge badge-blue"><%= task.required_skill %></span>
+                <span class="badge badge-gray"><%= task.task_type %></span>
+              </div>
+              <a href="/student/apply/<%= task.task_id %>" class="btn btn-primary btn-sm">Apply</a>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- My Applications -->
+<div class="fade-up-3">
+  <div class="section-title"><span class="dot"></span> My Applications</div>
+  <% if (applications.length === 0) { %>
+    <div class="empty">
+      <div class="empty-icon">📋</div>
+      <h3>No applications yet</h3>
+      <p>Browse open tasks and apply to get started.</p>
+      <a href="/tasks" class="btn btn-primary" style="margin-top:1rem">Browse Tasks</a>
+    </div>
+  <% } else { %>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Task</th>
+            <th>Company</th>
+            <th>Skill</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% applications.forEach(app => { %>
+            <tr>
+              <td><strong><%= app.title %></strong></td>
+              <td><%= app.company_name %></td>
+              <td><span class="badge badge-blue"><%= app.required_skill %></span></td>
+              <td>
+                <% if (app.status === 'accepted') { %>
+                  <span class="badge badge-green">Accepted</span>
+                <% } else if (app.status === 'rejected') { %>
+                  <span class="badge badge-red">Rejected</span>
+                <% } else if (app.status === 'cancelled') { %>
+                  <span class="badge badge-gray">Cancelled</span>
+                <% } else { %>
+                  <span class="badge badge-amber">Pending</span>
+                <% } %>
+              </td>
+              <td>
+                <% if (app.status === 'accepted') { %>
+                  <a href="/student/submit/<%= app.application_id %>" class="btn btn-primary btn-sm">Submit Work</a>
+                <% } else if (app.status === 'pending') { %>
+                  <form action="/student/<%= app.application_id %>/cancel" method="POST" style="display:inline">
+                    <button type="submit" class="btn btn-warning btn-sm"onclick="return confirm('Are you sure you want to cancel this application?');"
+>Cancel</button>
+                  </form>
+
+                <% } else { %>
+                  <span style="font-size:0.82rem;color:var(--gray-400)">No actions available</span>
+                <% } %>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</div>
+
+
+  <!-- My Submissions -->
+<div class="fade-up-4" style="margin-top:2.5rem">
+  <div class="section-title"><span class="dot"></span> My Submissions</div>
+  <% if (submissions.length === 0) { %>
+    <div class="empty">
+      <div class="empty-icon">📂</div>
+      <h3>No submissions yet</h3>
+      <p>Once you submit work for accepted tasks, it will appear here.</p>
+    </div>
+  <% } else { %>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Task</th>
+            <th>Company</th>
+            <th>Submission</th>
+            <th>Notes</th>
+            <th>Feedback</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% submissions.forEach(s => { %>
+            <tr>
+              <td><%= s.task_title %></td>
+              <td><%= s.company_name %></td>
+              <td><a href="<%= s.submission_url %>" target="_blank">View</a></td>
+              <td><%= s.notes || '-' %></td>
+              <td><%= s.feedback || 'Pending review' %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</div>
+
+</div>
+
+<%- include('partials/footer') %>
