@@ -1,0 +1,63 @@
+<%- include('partials/header', { user: undefined, title: 'Business Register' }) %>
+<style>
+  .auth-wrap { min-height:calc(100vh - 68px); display:flex; align-items:center; justify-content:center; padding:3rem 1rem; background: radial-gradient(ellipse 70% 50% at 50% 0%, #dcfce7 0%, transparent 70%); }
+  .auth-box { width:100%; max-width:520px; background:var(--white); border:1px solid var(--gray-200); border-radius:var(--radius-xl); box-shadow:var(--shadow-lg); padding:2.5rem; }
+  .auth-back { font-size:0.85rem; color:var(--gray-600); display:inline-flex; align-items:center; gap:0.3rem; margin-bottom:1.5rem; }
+  .auth-back:hover { color:var(--blue-500); }
+  .auth-title { font-family:var(--font-display); font-size:1.6rem; font-weight:800; color:var(--blue-900); margin-bottom:0.3rem; }
+  .auth-subtitle { font-size:0.9rem; color:var(--gray-600); margin-bottom:1.75rem; }
+</style>
+
+<div class="auth-wrap">
+  <div class="auth-box fade-up">
+    <a href="/register" class="auth-back">← Back</a>
+    <div class="auth-title">Business Registration</div>
+    <p class="auth-subtitle">Post tasks and connect with talented students ready to work.</p>
+
+    <% if (error) { %>
+      <div class="alert alert-error">⚠ <%= error %></div>
+    <% } %>
+
+    <form method="POST" action="/register/business">
+      <div class="form-group">
+        <label class="form-label">Company name</label>
+        <input type="text" name="company_name" class="form-input" placeholder="InnovateTech" required/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Login email</label>
+        <input type="email" name="email" class="form-input" placeholder="admin@company.co.za" required/>
+        <span class="form-hint">Used to log into your CampusLancer account</span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Company contact email</label>
+        <input type="email" name="company_email" class="form-input" placeholder="careers@company.co.za" required/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" name="password" class="form-input" placeholder="Min 8 characters" required minlength="8"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Industry</label>
+        <select name="industry" class="form-select" required>
+          <option value="">Select industry</option>
+          <option>Software Development</option>
+          <option>Data Analytics</option>
+          <option>Design & Creative</option>
+          <option>Marketing & Communications</option>
+          <option>Finance & Accounting</option>
+          <option>Engineering</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Company description <span style="color:var(--gray-400);font-weight:400">(optional)</span></label>
+        <textarea name="description" class="form-textarea" placeholder="Tell students what your company does..."></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary btn-full" style="margin-top:0.25rem;background:var(--blue-600)">Create business account</button>
+    </form>
+
+    <p style="text-align:center;margin-top:1.25rem;font-size:0.875rem;color:var(--gray-600)">Already registered? <a href="/login" style="color:var(--blue-500);font-weight:500">Sign in</a></p>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

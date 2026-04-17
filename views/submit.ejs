@@ -1,0 +1,42 @@
+<%- include('partials/header', { user: user, title: 'Submit Work' }) %>
+<style>
+  .submit-wrap { max-width: 600px; margin: 0 auto; padding: 2.5rem 2rem; }
+</style>
+
+<div class="submit-wrap">
+  <a href="/student/dashboard" style="font-size:0.85rem;color:var(--gray-600);display:inline-flex;align-items:center;gap:0.3rem;margin-bottom:1.5rem">← Back to dashboard</a>
+
+  <div class="card fade-up">
+    <div style="margin-bottom:1.5rem">
+      <div class="section-title"><span class="dot"></span> Submit Your Work</div>
+      <p style="font-size:0.875rem;color:var(--gray-600)">Task: <strong><%= application.title %></strong></p>
+    </div>
+
+    <% if (error) { %>
+      <div class="alert alert-error">⚠ <%= error %></div>
+    <% } %>
+
+    <div class="alert alert-info" style="margin-bottom:1.5rem">
+      Share a link to your work — a GitHub repo, Google Drive folder, or any public URL.
+    </div>
+
+    <form method="POST" action="/student/submit">
+      <input type="hidden" name="application_id" value="<%= application.application_id %>"/>
+      <div class="form-group">
+        <label class="form-label">Submission link</label>
+        <input type="url" name="submission_url" class="form-input" placeholder="https://github.com/you/project-name" required/>
+        <span class="form-hint">Make sure the link is publicly accessible</span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notes <span style="color:var(--gray-400);font-weight:400">(optional)</span></label>
+        <textarea name="notes" class="form-textarea" placeholder="Any notes for the reviewer — what you built, how to run it, known issues..."></textarea>
+      </div>
+      <div style="display:flex;gap:1rem;justify-content:flex-end">
+        <a href="/student/dashboard" class="btn btn-ghost">Cancel</a>
+        <button type="submit" class="btn btn-primary">Submit Work</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

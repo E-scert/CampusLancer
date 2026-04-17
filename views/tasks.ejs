@@ -1,0 +1,47 @@
+<%- include('partials/header', { user: user, title: 'Browse Tasks' }) %>
+
+<div class="page-hero">
+  <div class="page-hero-inner">
+    <h1>Browse Open Tasks</h1>
+    <p>Find real work that matches your skills and builds your career.</p>
+  </div>
+</div>
+
+<div class="page">
+  <% if (tasks.length === 0) { %>
+    <div class="empty">
+      <div class="empty-icon">📭</div>
+      <h3>No open tasks right now</h3>
+      <p>Check back soon — businesses post new tasks regularly.</p>
+    </div>
+  <% } else { %>
+    <div style="margin-bottom:1rem;color:var(--gray-600);font-size:0.9rem"><%= tasks.length %> open task<%= tasks.length !== 1 ? 's' : '' %> available</div>
+    <div class="grid-auto fade-up">
+      <% tasks.forEach(task => { %>
+        <div class="task-card">
+          <div>
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:0.5rem">
+              <div class="task-card-title"><%= task.title %></div>
+              <span class="badge badge-green" style="flex-shrink:0">Open</span>
+            </div>
+            <div class="task-card-company"><%= task.company_name %> · <%= task.industry %></div>
+          </div>
+          <p style="font-size:0.87rem;color:var(--gray-600);line-height:1.55"><%= task.description.substring(0,120) %>...</p>
+          <div style="display:flex;gap:0.4rem;flex-wrap:wrap">
+            <span class="badge badge-blue"><%= task.required_skill %></span>
+            <span class="badge badge-gray"><%= task.task_type %></span>
+            <% if (task.deadline) { %>
+              <span class="badge badge-amber">Due <%= new Date(task.deadline).toLocaleDateString('en-ZA', {day:'numeric',month:'short'}) %></span>
+            <% } %>
+          </div>
+          <div class="task-card-footer">
+            <span style="font-size:0.8rem;color:var(--gray-400)">Min score: <%= task.min_skill_score %></span>
+            <a href="/student/apply/<%= task.task_id %>" class="btn btn-primary btn-sm">Apply Now</a>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  <% } %>
+</div>
+
+<%- include('partials/footer') %>

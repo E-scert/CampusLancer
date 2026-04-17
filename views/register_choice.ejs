@@ -1,0 +1,55 @@
+<%- include('partials/header', { user: undefined, title: 'Register' }) %>
+<style>
+  .choice-wrap {
+    min-height: calc(100vh - 68px);
+    display: flex; align-items: center; justify-content: center;
+    padding: 3rem 1rem;
+    background: radial-gradient(ellipse 70% 50% at 50% 0%, var(--blue-100) 0%, transparent 70%);
+  }
+  .choice-box { width: 100%; max-width: 580px; text-align: center; }
+  .choice-title { font-family: var(--font-display); font-size: 2rem; font-weight: 800; color: var(--blue-900); margin-bottom: 0.5rem; }
+  .choice-sub { color: var(--gray-600); margin-bottom: 2.5rem; }
+  .choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 1.5rem; }
+  .choice-card {
+    background: var(--white); border: 2px solid var(--gray-200);
+    border-radius: var(--radius-xl); padding: 2.5rem 1.5rem;
+    cursor: pointer; transition: all 0.25s;
+    text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 1rem;
+  }
+  .choice-card:hover { border-color: var(--blue-400); box-shadow: var(--shadow-blue); transform: translateY(-4px); }
+  .choice-card.student:hover { background: var(--blue-50); }
+  .choice-card.business:hover { background: #f0fdf4; border-color: #4ade80; }
+  .choice-icon {
+    width: 64px; height: 64px; border-radius: var(--radius-lg);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.8rem;
+  }
+  .choice-card.student .choice-icon { background: var(--blue-100); }
+  .choice-card.business .choice-icon { background: #dcfce7; }
+  .choice-card h3 { font-family: var(--font-display); font-size: 1.15rem; font-weight: 700; color: var(--blue-900); }
+  .choice-card p { font-size: 0.85rem; color: var(--gray-600); line-height: 1.5; }
+  .login-link { font-size: 0.875rem; color: var(--gray-600); }
+  .login-link a { color: var(--blue-500); font-weight: 500; }
+</style>
+
+<div class="choice-wrap">
+  <div class="choice-box fade-up">
+    <div class="choice-title">Join CampusLancer</div>
+    <p class="choice-sub">Choose how you want to use the platform</p>
+    <div class="choice-grid">
+      <a href="/register/student" class="choice-card student">
+        <div class="choice-icon">🎓</div>
+        <h3>I'm a Student</h3>
+        <p>Find real tasks, build your portfolio, and graduate with experience employers love.</p>
+      </a>
+      <a href="/register/business" class="choice-card business">
+        <div class="choice-icon">🏢</div>
+        <h3>I'm a Business</h3>
+        <p>Post tasks, discover talented students, and get real work done while shaping the next generation.</p>
+      </a>
+    </div>
+    <p class="login-link">Already have an account? <a href="/login">Sign in</a></p>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

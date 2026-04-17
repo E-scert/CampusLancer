@@ -1,0 +1,90 @@
+<%- include('partials/header', { user: user, title: 'Edit Business Profile' }) %>
+<style>
+  .auth-wrap { 
+    min-height:calc(100vh - 68px); 
+    display:flex; 
+    align-items:center; 
+    justify-content:center; 
+    padding:3rem 1rem; 
+    background: radial-gradient(ellipse 70% 50% at 50% 0%, #dcfce7 0%, transparent 70%); 
+  }
+  .auth-box { 
+    width:100%; 
+    max-width:520px; 
+    background:var(--white); 
+    border:1px solid var(--gray-200); 
+    border-radius:var(--radius-xl); 
+    box-shadow:var(--shadow-lg); 
+    padding:2.5rem; 
+  }
+  .auth-back { 
+    font-size:0.85rem; 
+    color:var(--gray-600); 
+    display:inline-flex; 
+    align-items:center; 
+    gap:0.3rem; 
+    margin-bottom:1.5rem; 
+  }
+  .auth-back:hover { color:var(--blue-500); }
+  .auth-title { 
+    font-family:var(--font-display); 
+    font-size:1.6rem; 
+    font-weight:800; 
+    color:var(--blue-900); 
+    margin-bottom:0.3rem; 
+  }
+  .auth-subtitle { 
+    font-size:0.9rem; 
+    color:var(--gray-600); 
+    margin-bottom:1.75rem; 
+  }
+  .form-actions { display:flex; gap:1rem; margin-top:1rem; }
+</style>
+
+<div class="auth-wrap">
+  <div class="auth-box fade-up">
+    <a href="/business/dashboard" class="auth-back">← Back to Dashboard</a>
+    <div class="auth-title">Edit Business Profile</div>
+    <p class="auth-subtitle">Update your company information to keep your profile current.</p>
+
+    <form method="POST" action="/business/profile/update">
+      <input type="hidden" name="business_id" value="<%= profile.profile_id %>"/>
+
+      <div class="form-group">
+        <label class="form-label">Company name</label>
+        <input type="text" name="company_name" class="form-input" value="<%= profile.company_name %>" required/>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Company contact email</label>
+        <input type="email" name="company_email" class="form-input" value="<%= profile.company_email %>" required/>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Industry</label>
+        <select name="industry" class="form-select" required>
+          <option value="">Select industry</option>
+          <option <%= profile.industry === 'Software Development' ? 'selected' : '' %>>Software Development</option>
+          <option <%= profile.industry === 'Data Analytics' ? 'selected' : '' %>>Data Analytics</option>
+          <option <%= profile.industry === 'Design & Creative' ? 'selected' : '' %>>Design & Creative</option>
+          <option <%= profile.industry === 'Marketing & Communications' ? 'selected' : '' %>>Marketing & Communications</option>
+          <option <%= profile.industry === 'Finance & Accounting' ? 'selected' : '' %>>Finance & Accounting</option>
+          <option <%= profile.industry === 'Engineering' ? 'selected' : '' %>>Engineering</option>
+          <option <%= profile.industry === 'Other' ? 'selected' : '' %>>Other</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Company description <span style="color:var(--gray-400);font-weight:400">(optional)</span></label>
+        <textarea name="description" class="form-textarea" placeholder="Tell students what your company does..."><%= profile.description %></textarea>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary btn-full" style="background:var(--blue-600)">Save Changes</button>
+        <a href="/business/dashboard" class="btn btn-outline btn-full">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

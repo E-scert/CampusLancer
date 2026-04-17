@@ -1,0 +1,51 @@
+<%- include('partials/header', { user: user, title: 'Apply' }) %>
+<style>
+  .apply-wrap { max-width: 680px; margin: 0 auto; padding: 2.5rem 2rem; }
+  .task-preview {
+    background: var(--blue-50); border: 1px solid var(--blue-200);
+    border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 2rem;
+  }
+  .task-preview h2 { font-family: var(--font-display); font-size: 1.3rem; font-weight: 800; color: var(--blue-900); margin-bottom: 0.3rem; }
+  .task-preview .meta { font-size: 0.875rem; color: var(--blue-700); margin-bottom: 0.75rem; }
+  .task-preview p { font-size: 0.9rem; color: var(--gray-700); line-height: 1.6; }
+</style>
+
+<div class="apply-wrap">
+  <a href="/tasks" style="font-size:0.85rem;color:var(--gray-600);display:inline-flex;align-items:center;gap:0.3rem;margin-bottom:1.5rem">← Back to tasks</a>
+
+  <div class="task-preview fade-up">
+    <h2><%= task.title %></h2>
+    <div class="meta"><%= task.company_name %> · <%= task.industry %> · <%= task.task_type %></div>
+    <p><%= task.description %></p>
+    <div style="display:flex;gap:0.5rem;margin-top:1rem;flex-wrap:wrap">
+      <span class="badge badge-blue"><%= task.required_skill %></span>
+      <% if (task.deadline) { %>
+        <span class="badge badge-amber">Deadline: <%= new Date(task.deadline).toLocaleDateString('en-ZA') %></span>
+      <% } %>
+    </div>
+  </div>
+
+  <div class="card fade-up-2">
+    <div class="section-title" style="margin-bottom:1.25rem"><span class="dot"></span> Your Application</div>
+
+    <% if (error) { %>
+      <div class="alert alert-error">⚠ <%= error %></div>
+    <% } %>
+
+    <form method="POST" action="/student/apply">
+      <input type="hidden" name="task_id" value="<%= task.task_id %>"/>
+      <div class="form-group">
+        <label class="form-label">Cover note</label>
+        <textarea name="cover_note" class="form-textarea" style="min-height:160px"
+          placeholder="Tell the business why you're the right person for this task. Mention relevant skills, projects, or experience..."></textarea>
+        <span class="form-hint">A strong cover note significantly improves your chances.</span>
+      </div>
+      <div style="display:flex;gap:1rem;justify-content:flex-end">
+        <a href="/tasks" class="btn btn-ghost">Cancel</a>
+        <button type="submit" class="btn btn-primary">Submit Application</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

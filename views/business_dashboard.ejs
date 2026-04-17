@@ -1,0 +1,213 @@
+<%- include('partials/header', { user: user, title: 'Business Dashboard' }) %>
+
+<div class="page-hero">
+  <div class="page-hero-inner" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem">
+    <div style="display:flex;align-items:center;gap:1.25rem">
+      <div style="width:60px;height:60px;background:rgba(255,255,255,0.15);border-radius:var(--radius-lg);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:1.2rem;font-weight:800;color:var(--white)">
+        <%= profile.company_name.substring(0,2).toUpperCase() %>
+      </div>
+      <div>
+        <h1 style="font-size:1.6rem;margin-bottom:0.2rem"><%= profile.company_name %></h1>
+        <p><%= profile.industry %> · <%= profile.company_email %></p>
+
+        <!-- Buttons moved directly under profile info -->
+        <div style="margin-top:0.75rem;display:flex;gap:0.75rem">
+          <a href="/business/profile/edit" class="btn btn-outline btn-sm">Edit Profile</a>
+          <form method="POST" action="/business/profile/delete" 
+                onsubmit="return confirm('Are you sure you want to delete your account? This cannot be undone.')"
+                style="margin:0">
+            <input type="hidden" name="business_id" value="<%= profile.profile_id %>"/>
+            <button type="submit" class="btn btn-danger btn-sm">Delete Profile</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Post Task button stays separate on the right -->
+    <div>
+      <a href="/business/post-task" class="btn btn-primary">+ Post a Task</a>
+    </div>
+  </div>
+</div>
+
+
+<div class="page">
+  
+
+  <!-- Stats -->
+ <!-- Stats -->
+  <div class="grid-3 fade-up" style="margin-bottom:2.5rem">
+    <div class="stat-card">
+      <div class="stat-label">Tasks posted</div>
+      <div class="stat-value"><%= tasks.length %></div>
+      <div class="stat-sub">All time</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total applicants</div>
+      <div class="stat-value"><%= totalApplicants %></div>
+      <div class="stat-sub">Across all tasks</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Open tasks</div>
+      <div class="stat-value"><%= tasks.filter(t => t.status === 'open').length %></div>
+      <div class="stat-sub">Currently accepting</div>
+    </div>
+  </div>
+
+  <!-- Posted Tasks -->
+  <div class="fade-up-2" style="margin-bottom:2.5rem">
+    <div class="section-title"><span class="dot"></span> Your Posted Tasks</div>
+    <% if (tasks.length === 0) { %>
+      <div class="empty">
+        <div class="empty-icon">📌</div>
+        <h3>No tasks posted yet</h3>
+        <p>Post your first task to start receiving applications from talented students.</p>
+        <a href="/business/post-task" class="btn btn-primary" style="margin-top:1rem">Post a Task</a>
+      </div>
+    <% } else { %>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Skill</th>
+              <th>Type</th>
+              <th>Applicants</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% tasks.forEach(task => { %>
+              <tr>
+                <td><strong><%= task.title %></strong></td>
+                <td><span class="badge badge-blue"><%= task.required_skill %></span></td>
+                <td><span class="badge badge-gray"><%= task.task_type %></span></td>
+                <td>
+                  <a href="/business/applicants/<%= task.task_id %>" style="color:var(--blue-500);font-weight:600">
+                    <%= task.total_applicants %> applied
+                  </a>
+                </td>
+                <td>
+                  <% if (task.status === 'open') { %>
+                    <span class="badge badge-green">Open</span>
+                  <% } else if (task.status === 'in_progress') { %>
+                    <span class="badge badge-amber">In Progress</span>
+                  <% } else { %>
+                    <span class="badge badge-gray">Closed</span>
+                  <% } %>
+                </td>
+                <td style="display:flex;gap:0.5rem;align-items:center">
+                  <a href="/business/applicants/<%= task.task_id %>" class="btn btn-outline btn-sm">View</a>
+                  <form method="POST" action="/business/task/delete/<%= task.task_id %>" style="display:inline" onsubmit="return confirm('Delete this task?')">
+                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                  </form>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- AI Top Candidates -->
+  <div class="fade-up-3">
+    <div class="section-title"><span class="dot"></span> AI Top Candidates</div>
+    <p style="font-size:0.875rem;color:var(--gray-600);margin-bottom:1.25rem">Students ranked by skill score who applied to your tasks.</p>
+    <% if (topStudents.length === 0) { %>
+      <div class="empty">
+        <div class="empty-icon">🤖</div>
+        <h3>No applicants yet</h3>
+        <p>Once students apply, the AI will rank them here by skill score.</p>
+      </div>
+    <% } else { %>
+      <div class="grid-auto">
+        <% topStudents.forEach(s => { %>
+          <div class="card card-hover">
+            <div style="display:flex;align-items:center;gap:0.85rem;margin-bottom:1rem">
+              <div style="width:44px;height:44px;border-radius:50%;background:var(--blue-100);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:800;color:var(--blue-700);font-size:0.95rem;flex-shrink:0">
+                <%= s.first_name[0] %><%= s.last_name[0] %>
+              </div>
+              <div>
+                <div style="font-weight:600;font-family:var(--font-display);color:var(--blue-900)"><%= s.first_name %> <%= s.last_name %></div>
+                <div style="font-size:0.8rem;color:var(--gray-600)"><%= s.institution %></div>
+              </div>
+              <div style="margin-left:auto;text-align:right">
+                <div style="font-family:var(--font-display);font-size:1.2rem;font-weight:800;color:var(--blue-600)"><%= s.ai_skill_score %></div>
+                <div style="font-size:0.72rem;color:var(--gray-400)">AI score</div>
+              </div>
+            </div>
+            <div style="font-size:0.82rem;color:var(--gray-600);margin-bottom:0.85rem">
+              Applied for: <strong><%= s.task_title %></strong>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <% if (s.github_username) { %>
+                <a href="https://github.com/<%= s.github_username %>" target="_blank" class="btn btn-ghost btn-sm">GitHub</a>
+              <% } else { %>
+                <span></span>
+              <% } %>
+              <form method="POST" action="/business/application/update">
+                <input type="hidden" name="application_id" value="<%= s.application_id %>"/>
+                <% if (s.status === 'pending') { %>
+                  <input type="hidden" name="status" value="accepted"/>
+                  <button type="submit" class="btn btn-primary btn-sm">Accept</button>
+                <% } else { %>
+                  <span class="badge badge-<%= s.status === 'accepted' ? 'green' : 'red' %>"><%= s.status %></span>
+                <% } %>
+              </form>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    <% } %>
+  </div>
+
+    <!-- Student Submissions -->
+  <div class="fade-up-4" style="margin-top:2.5rem">
+    <div class="section-title"><span class="dot"></span> Student Submissions</div>
+    <% if (submissions.length === 0) { %>
+      <div class="empty">
+        <div class="empty-icon">📂</div>
+        <h3>No submissions yet</h3>
+        <p>Once students submit work for your tasks, it will appear here.</p>
+      </div>
+    <% } else { %>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Task</th>
+              <th>Student</th>
+              <th>Submitted At</th>
+              <th>Work</th>
+              <th>Notes</th>
+              <th>Feedback</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% submissions.forEach(s => { %>
+              <tr>
+                <td><%= s.task_title %></td>
+                <td><%= s.first_name %> <%= s.last_name %> (<%= s.institution %>)</td>
+                <td><%= s.submitted_at %></td>
+                <td><a href="<%= s.submission_url %>" target="_blank">View</a></td>
+                <td><%= s.notes || '-' %></td>
+                <td>
+                  <form method="POST" action="/business/feedback" style="display:flex;flex-direction:column;gap:0.5rem">
+                    <input type="hidden" name="submission_id" value="<%= s.submission_id %>">
+                    <textarea name="feedback" rows="2" style="width:100%"><%= s.feedback || "" %></textarea>
+                    <button type="submit" class="btn btn-primary btn-sm">Save Feedback</button>
+                  </form>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
+
+</div>
+
+<%- include('partials/footer') %>
