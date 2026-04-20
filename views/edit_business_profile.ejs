@@ -41,46 +41,42 @@
   .form-actions { display:flex; gap:1rem; margin-top:1rem; }
 </style>
 
+
 <div class="auth-wrap">
   <div class="auth-box fade-up">
     <a href="/business/dashboard" class="auth-back">← Back to Dashboard</a>
     <div class="auth-title">Edit Business Profile</div>
-    <p class="auth-subtitle">Update your company information to keep your profile current.</p>
+    <p class="auth-subtitle">Update your company information below.</p>
 
-    <form method="POST" action="/business/profile/update">
+    <form method="POST" action="/business/profile/update" enctype="multipart/form-data">
       <input type="hidden" name="business_id" value="<%= profile.profile_id %>"/>
 
+      <!-- Logo / Profile Picture -->
       <div class="form-group">
-        <label class="form-label">Company name</label>
+        <label class="form-label">Company Logo</label>
+        <input type="file" name="profile_picture" class="form-input" accept="image/*"/>
+      </div>
+
+      <!-- Company Name -->
+      <div class="form-group">
+        <label class="form-label">Company Name</label>
         <input type="text" name="company_name" class="form-input" value="<%= profile.company_name %>" required/>
       </div>
 
+      <!-- Industry -->
       <div class="form-group">
-        <label class="form-label">Company contact email</label>
+        <label class="form-label">Industry</label>
+        <input type="text" name="industry" class="form-input" value="<%= profile.industry %>" required/>
+      </div>
+
+      <!-- Company Email -->
+      <div class="form-group">
+        <label class="form-label">Company Email</label>
         <input type="email" name="company_email" class="form-input" value="<%= profile.company_email %>" required/>
       </div>
 
-      <div class="form-group">
-        <label class="form-label">Industry</label>
-        <select name="industry" class="form-select" required>
-          <option value="">Select industry</option>
-          <option <%= profile.industry === 'Software Development' ? 'selected' : '' %>>Software Development</option>
-          <option <%= profile.industry === 'Data Analytics' ? 'selected' : '' %>>Data Analytics</option>
-          <option <%= profile.industry === 'Design & Creative' ? 'selected' : '' %>>Design & Creative</option>
-          <option <%= profile.industry === 'Marketing & Communications' ? 'selected' : '' %>>Marketing & Communications</option>
-          <option <%= profile.industry === 'Finance & Accounting' ? 'selected' : '' %>>Finance & Accounting</option>
-          <option <%= profile.industry === 'Engineering' ? 'selected' : '' %>>Engineering</option>
-          <option <%= profile.industry === 'Other' ? 'selected' : '' %>>Other</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">Company description <span style="color:var(--gray-400);font-weight:400">(optional)</span></label>
-        <textarea name="description" class="form-textarea" placeholder="Tell students what your company does..."><%= profile.description %></textarea>
-      </div>
-
       <div class="form-actions">
-        <button type="submit" class="btn btn-primary btn-full" style="background:var(--blue-600)">Save Changes</button>
+        <button type="submit" class="btn btn-primary btn-full">Save Changes</button>
         <a href="/business/dashboard" class="btn btn-outline btn-full">Cancel</a>
       </div>
     </form>

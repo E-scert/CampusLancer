@@ -191,17 +191,22 @@ exports.postFeedback = async (req, res) => {
 // Update business profile
 exports.updateProfile = async (req, res) => {
   const { business_id, company_name, industry, company_email } = req.body;
+
+  // If a file was uploaded, build the URL; otherwise keep the existing one
+  const profilePicUrl = req.file ? `/uploads/${req.file.filename}` : null;
   try {
     await db.query(
       `UPDATE business_profiles 
-       SET company_name = $1, industry = $2, company_email = $3 
-       WHERE profile_id = $4`,
-      [company_name, industry, company_email, business_id],
+       SET company_name = $1, industry = $2, company_email = $3,logo_url = COALESCE($4, logo_url)
+       WHERE profile_id = $5`,
+      [company_name, industry, company_email, profilePicUrl, business_id],
     );
 
     // Update session info so changes reflect immediately
     req.session.user.company_name = company_name;
     req.session.user.company_email = company_email;
+    console.log("Body:", req.body);
+    console.log("File:", req.file);
 
     res.redirect("/business/dashboard");
   } catch (err) {
