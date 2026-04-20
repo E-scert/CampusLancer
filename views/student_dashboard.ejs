@@ -3,9 +3,17 @@
 <div class="page-hero">
   <div class="page-hero-inner">
     <div style="display:flex;align-items:center;gap:1.25rem;flex-wrap:wrap">
-      <div style="width:60px;height:60px;background:rgba(255,255,255,0.15);border-radius:var(--radius-lg);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:1.3rem;font-weight:800;color:var(--white)">
-        <%= profile.first_name[0] %><%= profile.last_name[0] %>
-      </div>
+      
+      <div style="width:60px;height:60px;background:rgba(255,255,255,0.15);border-radius:var(--radius-lg);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:1.3rem;font-weight:800;color:var(--white);overflow:hidden">
+        <% if (profile.profile_pic_url) { %>
+         <img src="<%= profile.profile_pic_url %>" alt="Profile Picture"
+           style="inline-size:100%;block-size:100%;object-fit:cover;border-radius:var(--radius-lg)" />
+          <% } else { %>
+         <%= profile.first_name[0] %><%= profile.last_name[0] %>
+          <% } %>
+     
+    </div>
+
       <div>
         <h1 style="font-size:1.6rem;margin-bottom:0.2rem"><%= profile.first_name %> </h1>
         <p><%= profile.bio %></p>

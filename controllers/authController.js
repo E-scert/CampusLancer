@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const scanGitHub = require("../config/githubScanner");
 
 exports.getLanding = (req, res) => res.render("landing");
+
 exports.getLogin = (req, res) => {
   res.render("login", {
     error: null,
@@ -51,7 +52,7 @@ exports.postLogin = async (req, res) => {
   }
 };
 
-//choice register
+// choice register
 exports.getRegisterChoice = (req, res) => res.render("register_choice");
 exports.getRegisterStudent = (req, res) =>
   res.render("register_student", { error: null });
@@ -76,25 +77,21 @@ exports.postRegisterStudent = async (req, res) => {
     );
     const user_id = userRows[0].user_id;
 
-    // ── GitHub scan ──────────────────────────────────────
+    // GitHub scan
     let ai_skill_score = 0;
     let top_languages = null;
     let ai_suggestions = null;
-
     if (github_username && github_username.trim() !== "") {
-      console.log(`Scanning GitHub for: ${github_username}...`);
       const result = await scanGitHub(github_username.trim());
       ai_skill_score = result.score;
       top_languages = JSON.stringify(result.languages);
       ai_suggestions = JSON.stringify(result.suggestions);
-      console.log(`Scan complete. Score: ${ai_skill_score}`);
     }
 
-    //inserts the profile(user data/info) into the data
     await db.query(
       `INSERT INTO student_profiles
-             (user_id, first_name, last_name, institution, course, github_username, ai_skill_score, top_languages, ai_suggestions,bio)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9,$10)`,
+       (user_id, first_name, last_name, institution, course, github_username, ai_skill_score, top_languages, ai_suggestions, bio)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
       [
         user_id,
         first_name,
@@ -121,7 +118,7 @@ exports.postRegisterStudent = async (req, res) => {
   }
 };
 
-//register bussiness profile
+// register business profile
 exports.getRegisterBusiness = (req, res) =>
   res.render("register_business", { error: null });
 
@@ -134,19 +131,21 @@ exports.postRegisterBusiness = async (req, res) => {
     industry,
     description,
   } = req.body;
-  //insert business info into database of users and profiles
   try {
     const hash = await bcrypt.hash(password, 10);
+
     const [userRows] = await db.query(
       "INSERT INTO users (email, password_hash, user_type) VALUES ($1, $2, $3) RETURNING user_id",
       [email, hash, "business"],
     );
     const user_id = userRows[0].user_id;
+
     await db.query(
       `INSERT INTO business_profiles (user_id, company_name, company_email, industry, description)
-             VALUES ($1, $2, $3, $4, $5)`,
+       VALUES ($1, $2, $3, $4, $5)`,
       [user_id, company_name, company_email, industry, description || null],
     );
+
     req.session.user = { user_id, email, user_type: "business" };
     res.redirect("/business/dashboard");
   } catch (err) {
@@ -158,7 +157,8 @@ exports.postRegisterBusiness = async (req, res) => {
     res.render("register_business", { error });
   }
 };
-//returns to landing page //log out.
+
+// logout
 exports.logout = (req, res) => {
   req.session.destroy();
   res.redirect("/");

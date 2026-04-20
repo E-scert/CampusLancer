@@ -198,6 +198,7 @@ exports.getEditProfile = async (req, res) => {
 };
 
 // Handle profile update
+// Handle profile update (text + picture)
 exports.updateProfile = async (req, res) => {
   const {
     student_id,
@@ -208,11 +209,18 @@ exports.updateProfile = async (req, res) => {
     bio,
     github_username,
   } = req.body;
+
+  console.log("File received:", req.file); // debug log
+
+  // If a file was uploaded, build the URL; otherwise keep the existing one
+  const profilePicUrl = req.file ? `/uploads/${req.file.filename}` : null;
+
   try {
     await db.query(
       `UPDATE student_profiles 
-       SET first_name = $1, last_name = $2, institution = $3, course = $4, bio = $5, github_username = $6
-       WHERE profile_id = $7`,
+       SET first_name=$1, last_name=$2, institution=$3, course=$4, bio=$5, github_username=$6,
+           profile_pic_url = COALESCE($7, profile_pic_url)
+       WHERE profile_id=$8`,
       [
         first_name,
         last_name,
@@ -220,6 +228,7 @@ exports.updateProfile = async (req, res) => {
         course,
         bio,
         github_username,
+        profilePicUrl,
         student_id,
       ],
     );
