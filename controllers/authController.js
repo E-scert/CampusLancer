@@ -129,6 +129,7 @@ exports.postRegisterBusiness = async (req, res) => {
     email,
     password,
     industry,
+    website_url,
     description,
   } = req.body;
   try {
@@ -141,9 +142,16 @@ exports.postRegisterBusiness = async (req, res) => {
     const user_id = userRows[0].user_id;
 
     await db.query(
-      `INSERT INTO business_profiles (user_id, company_name, company_email, industry, description)
-       VALUES ($1, $2, $3, $4, $5)`,
-      [user_id, company_name, company_email, industry, description || null],
+      `INSERT INTO business_profiles (user_id, company_name, company_email, industry, website_url, description)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [
+        user_id,
+        company_name,
+        company_email,
+        industry,
+        website_url,
+        description || null,
+      ],
     );
 
     req.session.user = { user_id, email, user_type: "business" };
