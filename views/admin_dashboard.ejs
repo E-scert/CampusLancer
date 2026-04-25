@@ -1,0 +1,35 @@
+<%- include('partials/header', { user: user, title: 'Admin Dashboard' }) %>
+
+<div class="page-hero">
+  <h1 style="color:#1e3a8a;text-align:center">Admin Dashboard</h1>
+</div>
+
+<div class="page">
+  <!-- Reports Section -->
+  <div class="section-title"><span class="dot"></span> Reports</div>
+  <div class="grid-3">
+    <div class="card">
+      <h3>Management Summary</h3>
+      <p>System-wide totals of businesses, students, tasks, applications, and submissions.</p>
+      <a href="/admin/reports/management-summary" class="btn btn-primary">📊 View Summary Report</a>
+    </div>
+    <div class="card">
+      <h3>Student Activity</h3>
+      <p>Applications and submissions per student.</p>
+      <a href="/admin/reports/student-summary" class="btn btn-outline">View Student Report</a>
+    </div>
+    <div class="card">
+      <h3>Task Status</h3>
+      <p>Open, in-progress, and closed tasks with applications.</p>
+      <a href="/admin/reports/task-status" class="btn btn-outline">View Task Report</a>
+    </div>
+    <div class="card">
+      <h3>Industry Comparison</h3>
+      <p>Activity grouped by industry.</p>
+      <a href="/admin/reports/industry-summary" class="btn btn-outline">View Industry Report</a>
+    </div>
+  </div>
+  <a href="/admin/reports/export-pdf" class="btn">Download PDF Report</a>
+</div>
+
+<%- include('partials/footer') %>

@@ -8,6 +8,7 @@ const authRoutes = require("./routes/authRoutes");
 const studentRoutes = require("./routes/studentRoutes");
 const businessRoutes = require("./routes/businessRoutes");
 const taskRoutes = require("./routes/taskRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -35,7 +36,7 @@ app.use("/", authRoutes);
 app.use("/student", studentRoutes);
 app.use("/business", businessRoutes);
 app.use("/tasks", taskRoutes);
-
+app.use("/admin", adminRoutes);
 // ── Start ───────────────────────────────────────────────────
 app.listen(PORT, () => {
   console.log(`CampusLancer running at http://localhost:${PORT}`);

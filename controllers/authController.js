@@ -171,3 +171,41 @@ exports.logout = (req, res) => {
   req.session.destroy();
   res.redirect("/");
 };
+
+// admin login
+exports.showAdminLogin = (req, res) => {
+  res.render("admin_login", { error: null });
+};
+
+exports.postAdminLogin = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const [rows] = await db.query(
+      "SELECT * FROM users WHERE email = $1 AND user_type = 'admin'",
+      [email],
+    );
+
+    if (rows.length === 0) {
+      return res.render("admin_login", { error: "Admin email not found." });
+    }
+
+    const admin = rows[0];
+    const match = await bcrypt.compare(password, admin.password_hash);
+
+    if (!match) {
+      return res.render("admin_login", { error: "Incorrect password." });
+    }
+
+    req.session.user = {
+      user_id: admin.user_id,
+      email: admin.email,
+      user_type: admin.user_type,
+    };
+
+    res.redirect("/admin/dashboard");
+  } catch (err) {
+    console.error(err);
+    res.render("admin_login", { error: "Error during admin login." });
+  }
+};

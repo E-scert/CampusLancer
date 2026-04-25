@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>CampusLancer Combined Summary Report</title>
+    <style>
+      body { font-family: Arial, sans-serif; background:#fff; color:#333; padding:20px; }
+      h1 { text-align:center; color:#1e3a8a; margin-bottom:40px; }
+      h2 { color:#1e40af; margin-top:40px; margin-bottom:20px; }
+      .section { margin-bottom:60px; page-break-after:always; }
+      table { width:100%; border-collapse:collapse; margin-top:15px; }
+      th, td { padding:10px; border:1px solid #ddd; text-align:left; }
+      th { background:#1e40af; color:#fff; }
+      tr:nth-child(even) { background:#f9fafb; }
+
+      /* Footer styling */
+      .footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        font-size: 12px;
+        color: #666;
+        text-align: center;
+        border-top: 1px solid #ddd;
+        padding: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>CampusLancer Summary Reports</h1>
+
+    <!-- Management Summary -->
+    <div class="section">
+      <h2>Management Summary</h2>
+      <table>
+        <tr><th>Total Businesses</th><td><%= management.total_businesses %></td></tr>
+        <tr><th>Total Students</th><td><%= management.total_students %></td></tr>
+        <tr><th>Total Tasks</th><td><%= management.total_tasks %></td></tr>
+        <tr><th>Total Applications</th><td><%= management.total_applications %></td></tr>
+        <tr><th>Total Submissions</th><td><%= management.total_submissions %></td></tr>
+      </table>
+    </div>
+
+    <!-- Student Summary -->
+    <div class="section">
+      <h2>Student Summary</h2>
+      <table>
+        <tr><th>Total Students</th><td><%= student.total_students %></td></tr>
+        <tr><th>Total Applications</th><td><%= student.total_applications %></td></tr>
+        <tr><th>Total Submissions</th><td><%= student.total_submissions %></td></tr>
+      </table>
+    </div>
+
+    <!-- Task Status Summary -->
+    <div class="section">
+      <h2>Task Status Summary</h2>
+      <table>
+        <tr><th>Open Tasks</th><td><%= tasks.open %></td></tr>
+        <tr><th>In Progress Tasks</th><td><%= tasks.in_progress %></td></tr>
+        <tr><th>Closed Tasks</th><td><%= tasks.closed %></td></tr>
+      </table>
+    </div>
+
+    <!-- Industry Summary -->
+    <div class="section">
+      <h2>Industry Summary</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Industry</th>
+            <th>Total Businesses</th>
+            <th>Total Tasks</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% industry.forEach(row => { %>
+            <tr>
+              <td><%= row.industry %></td>
+              <td><%= row.total_businesses %></td>
+              <td><%= row.total_tasks %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      CampusLancer Report — Generated on <%= new Date().toLocaleDateString() %>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Task Status Report</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #f0f4f8;
+        margin: 0;
+        padding: 20px;
+      }
+      h2 {
+        color: #1e3a8a;
+        text-align: center;
+        margin-bottom: 30px;
+      }
+      .report-container {
+        max-width: 700px;
+        margin: 0 auto;
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        padding: 25px;
+      }
+      .report-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid #e5e7eb;
+      }
+      .report-item:last-child {
+        border-bottom: none;
+      }
+      .label {
+        font-weight: bold;
+        color: #1e40af;
+      }
+      .value {
+        font-weight: bold;
+        color: #2563eb;
+      }
+      .back-link {
+        display: inline-block;
+        margin: 1rem auto;
+        text-decoration: none;
+        color: #2563eb;
+        font-weight: 600;
+      }
+      .back-link:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <%- include('partials/adminNav') %>
+    <h2>Task Status Report</h2>
+    <a href="/admin/dashboard" class="back-link">← Back to Dashboard</a>
+    <div class="report-container">
+      <div class="report-item">
+        <span class="label">Open Tasks:</span>
+        <span class="value"><%= data.open_tasks %></span>
+      </div>
+      <div class="report-item">
+        <span class="label">In Progress Tasks:</span>
+        <span class="value"><%= data.in_progress_tasks %></span>
+      </div>
+      <div class="report-item">
+        <span class="label">Closed Tasks:</span>
+        <span class="value"><%= data.closed_tasks %></span>
+      </div>
+    </div>
+  </body>
+</html>

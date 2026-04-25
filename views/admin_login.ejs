@@ -1,0 +1,60 @@
+<%- include('partials/header', { user: undefined, title: 'Admin Login' }) %>
+<style>
+  .auth-wrap {
+    min-height: calc(100vh - 68px);
+    display: flex; align-items: center; justify-content: center;
+    padding: 3rem 1rem;
+    background: radial-gradient(ellipse 70% 50% at 50% 0%, var(--blue-100) 0%, transparent 70%);
+  }
+  .auth-box {
+    width: 100%; max-width: 440px;
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+    padding: 2.5rem;
+  }
+  .auth-logo { font-family: var(--font-display); font-size: 1.4rem; font-weight: 800; color: var(--blue-800); margin-bottom: 0.25rem; }
+  .auth-logo span { color: var(--blue-500); }
+  .auth-subtitle { font-size: 0.9rem; color: var(--gray-600); margin-bottom: 2rem; }
+  .auth-title { font-family: var(--font-display); font-size: 1.6rem; font-weight: 800; color: var(--blue-900); margin-bottom: 0.3rem; }
+  .auth-divider { display: flex; align-items: center; gap: 1rem; margin: 1.25rem 0; }
+  .auth-divider span { height: 1px; flex: 1; background: var(--gray-200); }
+  .auth-divider p { font-size: 0.8rem; color: var(--gray-400); white-space: nowrap; }
+  .auth-footer { text-align: center; margin-top: 1.5rem; font-size: 0.875rem; color: var(--gray-600); }
+  .auth-footer a { color: var(--blue-500); font-weight: 500; }
+  .auth-footer a:hover { text-decoration: underline; }
+</style>
+
+<div class="auth-wrap">
+  <div class="auth-box fade-up">
+    <div class="auth-logo">Campus<span>Lancer</span></div>
+    <div class="auth-subtitle">Admin access portal</div>
+    <div class="auth-title">Welcome back, Admin</div>
+    <p style="font-size:0.9rem;color:var(--gray-600);margin-bottom:1.5rem">
+      Sign in with your admin credentials.
+    </p>
+
+    <% if (error) { %>
+      <div class="alert alert-error">⚠ <%= error %></div>
+    <% } %>
+
+    <form method="POST" action="/admin/login">
+      <div class="form-group">
+        <label class="form-label">Email address</label>
+        <input type="email" name="email" class="form-input" placeholder="admin@campuslancer.com" required/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" name="password" class="form-input" placeholder="••••••••" required/>
+      </div>
+      <button type="submit" class="btn btn-primary btn-full" style="margin-top:0.5rem">Sign in</button>
+    </form>
+
+    <div class="auth-footer">
+      <a href="/">Back to homepage</a>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>
