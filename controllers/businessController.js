@@ -281,7 +281,6 @@ exports.getEditProfile = async (req, res) => {
 };
 
 // controllers/businessController.js
-
 exports.getSummaryReport = async (req, res) => {
   const user_id = req.session.user.user_id;
   try {
@@ -292,10 +291,21 @@ exports.getSummaryReport = async (req, res) => {
     );
     const profile = profileRows[0];
 
+    // Handle date filters (default: current month)
+    let { startDate, endDate } = req.query;
+    if (!startDate || !endDate) {
+      const today = new Date();
+      const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+      const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+
+      startDate = startDate || firstDay.toISOString().split("T")[0];
+      endDate = endDate || lastDay.toISOString().split("T")[0];
+    }
+
     // Tasks posted
     const [tasksCount] = await db.query(
-      "SELECT COUNT(*) AS total_tasks FROM tasks WHERE business_id = $1",
-      [profile.profile_id],
+      "SELECT COUNT(*) AS total_tasks FROM tasks WHERE business_id = $1 AND posted_at BETWEEN $2 AND $3",
+      [profile.profile_id, startDate, endDate],
     );
 
     // Applicants
@@ -303,8 +313,8 @@ exports.getSummaryReport = async (req, res) => {
       `SELECT COUNT(*) AS total_applicants
        FROM applications a
        JOIN tasks t ON a.task_id = t.task_id
-       WHERE t.business_id = $1`,
-      [profile.profile_id],
+       WHERE t.business_id = $1 AND a.applied_at BETWEEN $2 AND $3`,
+      [profile.profile_id, startDate, endDate],
     );
 
     // Submissions
@@ -313,18 +323,18 @@ exports.getSummaryReport = async (req, res) => {
        FROM submissions s
        JOIN applications a ON s.application_id = a.application_id
        JOIN tasks t ON a.task_id = t.task_id
-       WHERE t.business_id = $1`,
-      [profile.profile_id],
+       WHERE t.business_id = $1 AND s.submitted_at BETWEEN $2 AND $3`,
+      [profile.profile_id, startDate, endDate],
     );
 
     // Recent tasks
     const [recentTasks] = await db.query(
       `SELECT task_id, title, posted_at
        FROM tasks
-       WHERE business_id = $1
+       WHERE business_id = $1 AND posted_at BETWEEN $2 AND $3
        ORDER BY posted_at DESC
        LIMIT 5`,
-      [profile.profile_id],
+      [profile.profile_id, startDate, endDate],
     );
 
     res.render("business_summary", {
@@ -334,6 +344,8 @@ exports.getSummaryReport = async (req, res) => {
       applicantsCount: applicantsCount[0],
       submissionsCount: submissionsCount[0],
       recentTasks,
+      startDate,
+      endDate,
       generatedAt: new Date().toLocaleString(),
     });
   } catch (err) {
@@ -341,21 +353,31 @@ exports.getSummaryReport = async (req, res) => {
     res.send("Could not generate business summary report.");
   }
 };
-
 exports.exportSummaryPDF = async (req, res) => {
   const user_id = req.session.user.user_id;
   try {
-    // Get business profile
+    // Business profile
     const [profileRows] = await db.query(
       "SELECT profile_id, company_name, industry, company_email FROM business_profiles WHERE user_id = $1",
       [user_id],
     );
-    const profile = profileRows[0]; // <-- define profile here
+    const profile = profileRows[0];
+
+    // Handle date filters (default: current month)
+    let { startDate, endDate } = req.query;
+    if (!startDate || !endDate) {
+      const today = new Date();
+      const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+      const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+
+      startDate = startDate || firstDay.toISOString().split("T")[0];
+      endDate = endDate || lastDay.toISOString().split("T")[0];
+    }
 
     // Tasks count
     const [tasksCount] = await db.query(
-      "SELECT COUNT(*) AS total_tasks FROM tasks WHERE business_id = $1",
-      [profile.profile_id],
+      "SELECT COUNT(*) AS total_tasks FROM tasks WHERE business_id = $1 AND posted_at BETWEEN $2 AND $3",
+      [profile.profile_id, startDate, endDate],
     );
 
     // Applicants count
@@ -363,8 +385,8 @@ exports.exportSummaryPDF = async (req, res) => {
       `SELECT COUNT(*) AS total_applicants
        FROM applications a
        JOIN tasks t ON a.task_id = t.task_id
-       WHERE t.business_id = $1`,
-      [profile.profile_id],
+       WHERE t.business_id = $1 AND a.applied_at BETWEEN $2 AND $3`,
+      [profile.profile_id, startDate, endDate],
     );
 
     // Submissions count
@@ -373,18 +395,18 @@ exports.exportSummaryPDF = async (req, res) => {
        FROM submissions s
        JOIN applications a ON s.application_id = a.application_id
        JOIN tasks t ON a.task_id = t.task_id
-       WHERE t.business_id = $1`,
-      [profile.profile_id],
+       WHERE t.business_id = $1 AND s.submitted_at BETWEEN $2 AND $3`,
+      [profile.profile_id, startDate, endDate],
     );
 
     // Recent tasks
     const [recentTasks] = await db.query(
       `SELECT task_id, title, posted_at
        FROM tasks
-       WHERE business_id = $1
+       WHERE business_id = $1 AND posted_at BETWEEN $2 AND $3
        ORDER BY posted_at DESC
        LIMIT 5`,
-      [profile.profile_id],
+      [profile.profile_id, startDate, endDate],
     );
 
     // Render template
@@ -396,6 +418,8 @@ exports.exportSummaryPDF = async (req, res) => {
       applicantsCount: applicantsCount[0],
       submissionsCount: submissionsCount[0],
       recentTasks,
+      startDate,
+      endDate,
       generatedAt: new Date().toLocaleString(),
       isPdf: true,
     });

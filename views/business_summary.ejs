@@ -17,8 +17,8 @@
       }
       .actions {
         display: flex;
-        justify-content: flex-end;
-        gap: 0.75rem;
+        justify-content: center;
+        gap: 1rem;
         margin-bottom: 1rem;
       }
       .btn {
@@ -34,6 +34,26 @@
       .btn-outline {
         border: 1px solid #2563eb;
         color: #2563eb;
+      }
+      .filter-form {
+        max-width: 800px;
+        margin: 0 auto 20px auto;
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        background: #f9fafb;
+        padding: 15px;
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+      }
+      .filter-form label {
+        font-weight: 600;
+        color: #1e40af;
+      }
+      .filter-form input {
+        padding: 5px;
+        border: 1px solid #cbd5e1;
+        border-radius: 4px;
       }
       .report-container {
         max-width: 800px;
@@ -87,8 +107,21 @@
     <!-- Action buttons -->
     <div class="actions">
       <a href="/business/dashboard" class="btn btn-outline">← Back to Dashboard</a>
-      <a href="/business/reports/export-pdf" class="btn btn-primary">⬇ Download PDF Report</a>
+      <a href="/business/reports/export-pdf?startDate=<%= startDate %>&endDate=<%= endDate %>" class="btn btn-primary">
+        ⬇ Download PDF Report
+      </a>
     </div>
+
+    <!-- Filter Form -->
+    <form method="get" action="/business/reports/summary" class="filter-form">
+      <label for="startDate">Start Date:</label>
+      <input type="date" id="startDate" name="startDate" value="<%= startDate || '' %>">
+
+      <label for="endDate">End Date:</label>
+      <input type="date" id="endDate" name="endDate" value="<%= endDate || '' %>">
+
+      <button type="submit" class="btn btn-primary">Apply Filter</button>
+    </form>
 
     <div class="report-container">
       <div class="report-item">
@@ -136,7 +169,7 @@
     </table>
 
     <div class="footer">
-      Report generated on <%= generatedAt %>
+      Report generated on <%= generatedAt %> (Date range: <%= startDate %> to <%= endDate %>)
     </div>
   </body>
 </html>

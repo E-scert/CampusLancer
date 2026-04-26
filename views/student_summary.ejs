@@ -10,85 +10,107 @@
         margin: 0;
         padding: 20px;
       }
-
       h2 {
         color: #1e3a8a; /* deep blue */
         text-align: center;
         margin: 30px 0;
       }
-
+      .actions {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+      }
+      .btn {
+        padding: 0.4rem 0.8rem;
+        border-radius: 4px;
+        text-decoration: none;
+        font-size: 0.9rem;
+      }
+      .btn-primary {
+        background-color: #2563eb;
+        color: #fff;
+      }
+      .btn-outline {
+        border: 1px solid #2563eb;
+        color: #2563eb;
+      }
+      .filter-form {
+        max-width: 700px;
+        margin: 0 auto 20px auto;
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        background: #fff;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      .filter-form label {
+        font-weight: 600;
+        color: #1e40af;
+      }
+      .filter-form input {
+        padding: 5px;
+        border: 1px solid #cbd5e1;
+        border-radius: 4px;
+      }
       .report-container {
         max-width: 700px;
         margin: 20px auto;
-        background-color: #ffffff; /* white card */
+        background-color: #ffffff;
         border-radius: 10px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         padding: 25px;
       }
-
       .report-item {
         display: flex;
         justify-content: space-between;
         padding: 12px 0;
         border-bottom: 1px solid #e5e7eb;
       }
-
       .report-item:last-child {
         border-bottom: none;
       }
-
       .label {
         font-weight: bold;
-        color: #1e40af; /* medium blue */
+        color: #1e40af;
       }
-
       .value {
         font-weight: bold;
-        color: #2563eb; /* bright blue */
-      }
-
-      .back-link {
-        display: inline-block;
-        margin: 1rem auto;
-        text-decoration: none;
         color: #2563eb;
-        font-weight: 600;
       }
-
-      .back-link:hover {
-        text-decoration: underline;
-      }
-
       .status-list, .recent-apps {
         margin-top: 20px;
       }
-
       .status-list h3, .recent-apps h3 {
         color: #1e3a8a;
         margin-bottom: 10px;
       }
-
       .status-item {
         display: flex;
         justify-content: space-between;
         padding: 8px 0;
         border-bottom: 1px solid #e5e7eb;
       }
-
       .recent-apps table {
         width: 100%;
         border-collapse: collapse;
       }
-
       .recent-apps th, .recent-apps td {
         border: 1px solid #e5e7eb;
         padding: 8px;
         text-align: left;
       }
-
       .recent-apps th {
         background-color: #f9fafb;
         color: #1e40af;
+      }
+      .footer {
+        margin-top: 20px;
+        text-align: center;
+        font-size: 0.85rem;
+        color: #666;
       }
     </style>
   </head>
@@ -98,8 +120,24 @@
 
     <h2>Student Summary Report</h2>
 
-    <a href="/student/dashboard" class="back-link">← Back to Dashboard</a>
-    <a href="/student/reports/export-pdf" class="back-link">⬇ Download PDF Report</a>
+    <!-- Action buttons -->
+    <div class="actions">
+      <a href="/student/dashboard" class="btn btn-outline">← Back to Dashboard</a>
+      <a href="/student/reports/export-pdf?startDate=<%= startDate %>&endDate=<%= endDate %>" class="btn btn-primary">
+        ⬇ Download PDF Report
+      </a>
+    </div>
+
+    <!-- Filter Form -->
+    <form method="get" action="/student/reports/summary" class="filter-form">
+      <label for="startDate">Start Date:</label>
+      <input type="date" id="startDate" name="startDate" value="<%= startDate || '' %>">
+
+      <label for="endDate">End Date:</label>
+      <input type="date" id="endDate" name="endDate" value="<%= endDate || '' %>">
+
+      <button type="submit" class="btn btn-primary">Apply Filter</button>
+    </form>
 
     <!-- Profile and totals -->
     <div class="report-container">
@@ -160,8 +198,9 @@
         </tbody>
       </table>
     </div>
-    <div style="margin-top:20px;text-align:center;font-size:0.85rem;color:#666;">
-  Report generated on <%= generatedAt %>
-</div>
+
+    <div class="footer">
+      Report generated on <%= generatedAt %> (Date range: <%= startDate %> to <%= endDate %>)
+    </div>
   </body>
 </html>

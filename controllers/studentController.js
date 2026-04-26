@@ -305,19 +305,30 @@ exports.getSummaryReport = async (req, res) => {
     );
     const profile = profileRows[0];
 
+    // Handle date filters (default: current month)
+    let { startDate, endDate } = req.query;
+    if (!startDate || !endDate) {
+      const today = new Date();
+      const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+      const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+
+      startDate = startDate || firstDay.toISOString().split("T")[0];
+      endDate = endDate || lastDay.toISOString().split("T")[0];
+    }
+
     // Total applications
     const [applicationsCount] = await db.query(
-      "SELECT COUNT(*) AS total_applications FROM applications WHERE student_id = $1",
-      [profile.profile_id],
+      "SELECT COUNT(*) AS total_applications FROM applications WHERE student_id = $1 AND applied_at BETWEEN $2 AND $3",
+      [profile.profile_id, startDate, endDate],
     );
 
     // Applications by status
     const [statusBreakdown] = await db.query(
       `SELECT status, COUNT(*) AS count 
        FROM applications 
-       WHERE student_id = $1 
+       WHERE student_id = $1 AND applied_at BETWEEN $2 AND $3
        GROUP BY status`,
-      [profile.profile_id],
+      [profile.profile_id, startDate, endDate],
     );
 
     // Total submissions
@@ -325,8 +336,8 @@ exports.getSummaryReport = async (req, res) => {
       `SELECT COUNT(*) AS total_submissions 
        FROM submissions s 
        JOIN applications a ON s.application_id = a.application_id 
-       WHERE a.student_id = $1`,
-      [profile.profile_id],
+       WHERE a.student_id = $1 AND s.submitted_at BETWEEN $2 AND $3`,
+      [profile.profile_id, startDate, endDate],
     );
 
     // Recent activity (last 5 applications)
@@ -335,10 +346,10 @@ exports.getSummaryReport = async (req, res) => {
        FROM applications a
        JOIN tasks t ON a.task_id = t.task_id
        JOIN business_profiles bp ON t.business_id = bp.profile_id
-       WHERE a.student_id = $1
+       WHERE a.student_id = $1 AND a.applied_at BETWEEN $2 AND $3
        ORDER BY a.applied_at DESC
        LIMIT 5`,
-      [profile.profile_id],
+      [profile.profile_id, startDate, endDate],
     );
 
     res.render("student_summary", {
@@ -348,6 +359,8 @@ exports.getSummaryReport = async (req, res) => {
       submissionsCount: submissionsCount[0],
       statusBreakdown,
       recentApplications,
+      startDate,
+      endDate,
       generatedAt: new Date().toLocaleString(),
     });
   } catch (err) {
@@ -356,7 +369,7 @@ exports.getSummaryReport = async (req, res) => {
   }
 };
 
-// Export student summary as PDF
+// Export student summary as PDF with date filters
 exports.exportSummaryPDF = async (req, res) => {
   const user_id = req.session.user.user_id;
   try {
@@ -367,10 +380,21 @@ exports.exportSummaryPDF = async (req, res) => {
     );
     const profile = profileRows[0];
 
+    // Handle date filters (default: current month)
+    let { startDate, endDate } = req.query;
+    if (!startDate || !endDate) {
+      const today = new Date();
+      const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+      const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+
+      startDate = startDate || firstDay.toISOString().split("T")[0];
+      endDate = endDate || lastDay.toISOString().split("T")[0];
+    }
+
     // Applications count
     const [applicationsCount] = await db.query(
-      "SELECT COUNT(*) AS total_applications FROM applications WHERE student_id = $1",
-      [profile.profile_id],
+      "SELECT COUNT(*) AS total_applications FROM applications WHERE student_id = $1 AND applied_at BETWEEN $2 AND $3",
+      [profile.profile_id, startDate, endDate],
     );
 
     // Submissions count
@@ -378,17 +402,17 @@ exports.exportSummaryPDF = async (req, res) => {
       `SELECT COUNT(*) AS total_submissions 
        FROM submissions s 
        JOIN applications a ON s.application_id = a.application_id 
-       WHERE a.student_id = $1`,
-      [profile.profile_id],
+       WHERE a.student_id = $1 AND s.submitted_at BETWEEN $2 AND $3`,
+      [profile.profile_id, startDate, endDate],
     );
 
     // Applications by status
     const [statusBreakdown] = await db.query(
       `SELECT status, COUNT(*) AS count 
        FROM applications 
-       WHERE student_id = $1 
+       WHERE student_id = $1 AND applied_at BETWEEN $2 AND $3
        GROUP BY status`,
-      [profile.profile_id],
+      [profile.profile_id, startDate, endDate],
     );
 
     // Recent applications
@@ -397,10 +421,10 @@ exports.exportSummaryPDF = async (req, res) => {
        FROM applications a
        JOIN tasks t ON a.task_id = t.task_id
        JOIN business_profiles bp ON t.business_id = bp.profile_id
-       WHERE a.student_id = $1
+       WHERE a.student_id = $1 AND a.applied_at BETWEEN $2 AND $3
        ORDER BY a.applied_at DESC
        LIMIT 5`,
-      [profile.profile_id],
+      [profile.profile_id, startDate, endDate],
     );
 
     // Render the same EJS template into HTML
@@ -412,6 +436,8 @@ exports.exportSummaryPDF = async (req, res) => {
       submissionsCount: submissionsCount[0],
       statusBreakdown,
       recentApplications,
+      startDate,
+      endDate,
       generatedAt: new Date().toLocaleString(),
     });
 

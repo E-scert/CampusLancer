@@ -5,48 +5,41 @@
     <style>
       body {
         font-family: Arial, sans-serif;
-        background-color: #f0f4f8; /* light blue background */
+        background-color: #f0f4f8;
         color: #333;
         margin: 0;
         padding: 20px;
       }
-
       h2 {
-        color: #1e3a8a; /* deep blue */
+        color: #1e3a8a;
         text-align: center;
         margin-bottom: 30px;
       }
-
       .report-container {
         max-width: 700px;
         margin: 0 auto;
-        background-color: #ffffff; /* white card */
+        background-color: #ffffff;
         border-radius: 10px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         padding: 25px;
       }
-
       .report-item {
         display: flex;
         justify-content: space-between;
         padding: 12px 0;
         border-bottom: 1px solid #e5e7eb;
       }
-
       .report-item:last-child {
         border-bottom: none;
       }
-
       .label {
         font-weight: bold;
-        color: #1e40af; /* medium blue */
+        color: #1e40af;
       }
-
       .value {
         font-weight: bold;
-        color: #2563eb; /* bright blue */
+        color: #2563eb;
       }
-
       .back-link {
         display: inline-block;
         margin: 1rem auto;
@@ -54,9 +47,32 @@
         color: #2563eb;
         font-weight: 600;
       }
-
       .back-link:hover {
         text-decoration: underline;
+      }
+      .filter-form {
+        max-width: 700px;
+        margin: 0 auto 20px auto;
+        background: #fff;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .filter-form label {
+        margin-right: 10px;
+        font-weight: 600;
+      }
+      .filter-form input {
+        margin-right: 15px;
+        padding: 5px;
+      }
+      .filter-form button {
+        background: #2563eb;
+        color: #fff;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 4px;
+        cursor: pointer;
       }
     </style>
   </head>
@@ -66,6 +82,31 @@
     <h2>Student Summary Report</h2>
 
     <a href="/admin/dashboard" class="back-link">← Back to Dashboard</a>
+
+    <!-- Filter Form -->
+    <form
+      method="get"
+      action="/admin/reports/student-summary"
+      class="filter-form"
+    >
+      <label for="startDate">Start Date:</label>
+      <input
+        type="date"
+        id="startDate"
+        name="startDate"
+        value="<%= startDate || '' %>"
+      />
+
+      <label for="endDate">End Date:</label>
+      <input
+        type="date"
+        id="endDate"
+        name="endDate"
+        value="<%= endDate || '' %>"
+      />
+
+      <button type="submit">Apply Filter</button>
+    </form>
 
     <div class="report-container">
       <div class="report-item">

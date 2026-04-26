@@ -12,12 +12,38 @@
       tr:hover { background:#f9fafb; }
       .back-link { display:inline-block; margin:1rem auto; text-decoration:none; color:#2563eb; font-weight:600; }
       .back-link:hover { text-decoration:underline; }
+      .filter-form {
+        max-width:800px;
+        margin:0 auto 20px auto;
+        background:#fff;
+        padding:15px;
+        border-radius:8px;
+        box-shadow:0 2px 4px rgba(0,0,0,0.1);
+      }
+      .filter-form label { margin-right:10px; font-weight:600; }
+      .filter-form input { margin-right:15px; padding:5px; }
+      .filter-form button {
+        background:#2563eb; color:#fff; border:none;
+        padding:6px 12px; border-radius:4px; cursor:pointer;
+      }
     </style>
   </head>
   <body>
     <%- include('partials/adminNav') %>
     <h2>Industry Summary Report</h2>
     <a href="/admin/dashboard" class="back-link">← Back to Dashboard</a>
+
+    <!-- Filter Form -->
+    <form method="get" action="/admin/reports/industry-summary" class="filter-form">
+      <label for="startDate">Start Date:</label>
+      <input type="date" id="startDate" name="startDate" value="<%= startDate || '' %>">
+
+      <label for="endDate">End Date:</label>
+      <input type="date" id="endDate" name="endDate" value="<%= endDate || '' %>">
+
+      <button type="submit">Apply Filter</button>
+    </form>
+
     <div class="report-container">
       <table>
         <thead>
