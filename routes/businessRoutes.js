@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
-const business = require("../controllers/businessController");
-const path = require("path");
+const businessController = require("../controllers/businessController");
 const multer = require("multer");
+const auth = require("../middleware/auth");
 
 // configure Multer to save files in /uploads
 const upload = multer({ dest: "uploads/" });
@@ -15,29 +15,41 @@ const isBusiness = (req, res, next) => {
   res.redirect("/login");
 };
 
-router.get("/dashboard", isBusiness, business.getDashboard);
-router.get("/post-task", isBusiness, business.getPostTask);
-router.post("/post-task", isBusiness, business.postPostTask);
-router.get("/applicants/:task_id", isBusiness, business.getApplicants);
+// ── Dashboard & Tasks ──────────────────────────────────────
+router.get("/dashboard", isBusiness, businessController.getDashboard);
+router.get("/post-task", isBusiness, businessController.getPostTask);
+router.post("/post-task", isBusiness, businessController.postPostTask);
+router.get(
+  "/applicants/:task_id",
+  isBusiness,
+  businessController.getApplicants,
+);
 router.post(
   "/application/update",
   isBusiness,
-  business.updateApplicationStatus,
+  businessController.updateApplicationStatus,
 );
+router.post("/task/delete/:task_id", isBusiness, businessController.deleteTask);
 
-router.post("/task/delete/:task_id", isBusiness, business.deleteTask);
+// ── Feedback ───────────────────────────────────────────────
+router.post("/feedback", isBusiness, businessController.postFeedback);
 
-router.post("/feedback", isBusiness, business.postFeedback);
-
-// IMPORTANT: only ONE update route, with Multer attached
+// ── Profile ────────────────────────────────────────────────
 router.post(
   "/profile/update",
   isBusiness,
   upload.single("profile_picture"),
-  business.updateProfile,
+  businessController.updateProfile,
+);
+router.get("/profile/edit", isBusiness, businessController.getEditProfile);
+router.post("/profile/delete", isBusiness, businessController.deleteProfile);
+
+// ── Reports ────────────────────────────────────────────────
+router.get("/reports/summary", isBusiness, businessController.getSummaryReport);
+router.get(
+  "/reports/export-pdf",
+  isBusiness,
+  businessController.exportSummaryPDF,
 );
 
-router.get("/profile/edit", isBusiness, business.getEditProfile);
-
-router.post("/profile/delete", isBusiness, business.deleteProfile);
 module.exports = router;

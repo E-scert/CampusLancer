@@ -1,8 +1,9 @@
 const express = require("express");
 const router = express.Router();
-const student = require("../controllers/studentController");
+const studentController = require("../controllers/studentController");
 const applicationsController = require("../controllers/applicationsController");
 const multer = require("multer");
+const auth = require("../middleware/auth");
 
 // configure Multer to save files in /uploads
 const upload = multer({ dest: "uploads/" });
@@ -14,31 +15,40 @@ const isStudent = (req, res, next) => {
 };
 
 // ── Student dashboard and tasks ─────────────────────────────
-router.get("/dashboard", isStudent, student.getDashboard);
-router.get("/apply/:task_id", isStudent, student.getApply);
-router.post("/apply", isStudent, student.postApply);
-router.get("/submit/:application_id", isStudent, student.getSubmit);
-router.post("/submit", isStudent, student.postSubmit);
-router.post("/rescan-github", isStudent, student.rescanGitHub);
+router.get("/dashboard", isStudent, studentController.getDashboard);
+router.get("/apply/:task_id", isStudent, studentController.getApply);
+router.post("/apply", isStudent, studentController.postApply);
+router.get("/submit/:application_id", isStudent, studentController.getSubmit);
+router.post("/submit", isStudent, studentController.postSubmit);
+router.post("/rescan-github", isStudent, studentController.rescanGitHub);
 
 // ── Profile routes ─────────────────────────────────────────
-router.get("/profile/edit", isStudent, student.getEditProfile);
-
-// IMPORTANT: only ONE update route, with Multer attached
+router.get("/profile/edit", isStudent, studentController.getEditProfile);
 router.post(
   "/profile/update",
   isStudent,
   upload.single("profile_picture"),
-  student.updateProfile,
+  studentController.updateProfile,
 );
-
-router.post("/profile/delete", isStudent, student.deleteProfile);
+router.post("/profile/delete", isStudent, studentController.deleteProfile);
 
 // ── Applications ───────────────────────────────────────────
 router.post(
   "/:application_id/cancel",
   isStudent,
   applicationsController.cancelApplication,
+);
+
+// ── Reports ────────────────────────────────────────────────
+router.get(
+  "/reports/summary",
+  auth.isStudent,
+  studentController.getSummaryReport,
+);
+router.get(
+  "/reports/export-pdf",
+  auth.isStudent,
+  studentController.exportSummaryPDF,
 );
 
 module.exports = router;

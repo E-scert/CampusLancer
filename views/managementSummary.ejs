@@ -46,18 +46,21 @@
         font-weight: bold;
         color: #2563eb; /* bright blue */
       }
+
+      .back-link {
+        display: inline-block;
+        margin: 1rem auto;
+        text-decoration: none;
+        color: #2563eb;
+        font-weight: 600;
+      }
     </style>
   </head>
   <%- include('partials/adminNav') %>
   <body>
     <h2>Management Summary Report</h2>
-    <a
-      href="/admin/dashboard"
-      class="btn btn-secondary"
-      style="margin-top: 1rem"
-    >
-      ←
-    </a>
+
+    <a href="/admin/dashboard" class="back-link">← Back to Dashboard</a>
 
     <div class="report-container">
       <div class="report-item">

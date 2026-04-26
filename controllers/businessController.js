@@ -1,4 +1,7 @@
 const db = require("../config/db");
+const path = require("path");
+const ejs = require("ejs");
+const pdf = require("html-pdf-node");
 
 exports.getDashboard = async (req, res) => {
   const user_id = req.session.user?.user_id;
@@ -274,5 +277,141 @@ exports.getEditProfile = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.send("Error loading profile edit page.");
+  }
+};
+
+// controllers/businessController.js
+
+exports.getSummaryReport = async (req, res) => {
+  const user_id = req.session.user.user_id;
+  try {
+    // Business profile
+    const [profileRows] = await db.query(
+      "SELECT profile_id, company_name, industry, company_email FROM business_profiles WHERE user_id = $1",
+      [user_id],
+    );
+    const profile = profileRows[0];
+
+    // Tasks posted
+    const [tasksCount] = await db.query(
+      "SELECT COUNT(*) AS total_tasks FROM tasks WHERE business_id = $1",
+      [profile.profile_id],
+    );
+
+    // Applicants
+    const [applicantsCount] = await db.query(
+      `SELECT COUNT(*) AS total_applicants
+       FROM applications a
+       JOIN tasks t ON a.task_id = t.task_id
+       WHERE t.business_id = $1`,
+      [profile.profile_id],
+    );
+
+    // Submissions
+    const [submissionsCount] = await db.query(
+      `SELECT COUNT(*) AS total_submissions
+       FROM submissions s
+       JOIN applications a ON s.application_id = a.application_id
+       JOIN tasks t ON a.task_id = t.task_id
+       WHERE t.business_id = $1`,
+      [profile.profile_id],
+    );
+
+    // Recent tasks
+    const [recentTasks] = await db.query(
+      `SELECT task_id, title, posted_at
+       FROM tasks
+       WHERE business_id = $1
+       ORDER BY posted_at DESC
+       LIMIT 5`,
+      [profile.profile_id],
+    );
+
+    res.render("business_summary", {
+      user: req.session.user,
+      profile,
+      tasksCount: tasksCount[0],
+      applicantsCount: applicantsCount[0],
+      submissionsCount: submissionsCount[0],
+      recentTasks,
+      generatedAt: new Date().toLocaleString(),
+    });
+  } catch (err) {
+    console.error(err);
+    res.send("Could not generate business summary report.");
+  }
+};
+
+exports.exportSummaryPDF = async (req, res) => {
+  const user_id = req.session.user.user_id;
+  try {
+    // Get business profile
+    const [profileRows] = await db.query(
+      "SELECT profile_id, company_name, industry, company_email FROM business_profiles WHERE user_id = $1",
+      [user_id],
+    );
+    const profile = profileRows[0]; // <-- define profile here
+
+    // Tasks count
+    const [tasksCount] = await db.query(
+      "SELECT COUNT(*) AS total_tasks FROM tasks WHERE business_id = $1",
+      [profile.profile_id],
+    );
+
+    // Applicants count
+    const [applicantsCount] = await db.query(
+      `SELECT COUNT(*) AS total_applicants
+       FROM applications a
+       JOIN tasks t ON a.task_id = t.task_id
+       WHERE t.business_id = $1`,
+      [profile.profile_id],
+    );
+
+    // Submissions count
+    const [submissionsCount] = await db.query(
+      `SELECT COUNT(*) AS total_submissions
+       FROM submissions s
+       JOIN applications a ON s.application_id = a.application_id
+       JOIN tasks t ON a.task_id = t.task_id
+       WHERE t.business_id = $1`,
+      [profile.profile_id],
+    );
+
+    // Recent tasks
+    const [recentTasks] = await db.query(
+      `SELECT task_id, title, posted_at
+       FROM tasks
+       WHERE business_id = $1
+       ORDER BY posted_at DESC
+       LIMIT 5`,
+      [profile.profile_id],
+    );
+
+    // Render template
+    const templatePath = path.join(__dirname, "../views/business_summary.ejs");
+    const htmlContent = await ejs.renderFile(templatePath, {
+      user: req.session.user,
+      profile,
+      tasksCount: tasksCount[0],
+      applicantsCount: applicantsCount[0],
+      submissionsCount: submissionsCount[0],
+      recentTasks,
+      generatedAt: new Date().toLocaleString(),
+      isPdf: true,
+    });
+
+    // Generate PDF
+    const file = { content: String(htmlContent) };
+    const pdfBuffer = await pdf.generatePdf(file, { format: "A4" });
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      "attachment; filename=Business_Summary_Report.pdf",
+    );
+    res.send(pdfBuffer);
+  } catch (err) {
+    console.error("PDF generation error:", err);
+    res.status(500).send("Could not generate business summary PDF.");
   }
 };

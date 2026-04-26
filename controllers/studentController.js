@@ -1,5 +1,8 @@
 const db = require("../config/db");
 const scanGitHub = require("../config/githubScanner");
+const path = require("path");
+const ejs = require("ejs");
+const pdf = require("html-pdf-node");
 
 //renders the student dashboard, showing their profile info, applications, recommended tasks, and AI suggestions based on their GitHub scan
 exports.getDashboard = async (req, res) => {
@@ -287,5 +290,144 @@ exports.deleteProfile = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.send("Error deleting student profile.");
+  }
+};
+
+// controllers/studentController.js
+
+exports.getSummaryReport = async (req, res) => {
+  const user_id = req.session.user.user_id;
+  try {
+    // Get student profile_id
+    const [profileRows] = await db.query(
+      "SELECT profile_id, first_name, last_name, institution, course FROM student_profiles WHERE user_id = $1",
+      [user_id],
+    );
+    const profile = profileRows[0];
+
+    // Total applications
+    const [applicationsCount] = await db.query(
+      "SELECT COUNT(*) AS total_applications FROM applications WHERE student_id = $1",
+      [profile.profile_id],
+    );
+
+    // Applications by status
+    const [statusBreakdown] = await db.query(
+      `SELECT status, COUNT(*) AS count 
+       FROM applications 
+       WHERE student_id = $1 
+       GROUP BY status`,
+      [profile.profile_id],
+    );
+
+    // Total submissions
+    const [submissionsCount] = await db.query(
+      `SELECT COUNT(*) AS total_submissions 
+       FROM submissions s 
+       JOIN applications a ON s.application_id = a.application_id 
+       WHERE a.student_id = $1`,
+      [profile.profile_id],
+    );
+
+    // Recent activity (last 5 applications)
+    const [recentApplications] = await db.query(
+      `SELECT a.application_id, a.status, a.applied_at, t.title, bp.company_name
+       FROM applications a
+       JOIN tasks t ON a.task_id = t.task_id
+       JOIN business_profiles bp ON t.business_id = bp.profile_id
+       WHERE a.student_id = $1
+       ORDER BY a.applied_at DESC
+       LIMIT 5`,
+      [profile.profile_id],
+    );
+
+    res.render("student_summary", {
+      user: req.session.user,
+      profile,
+      applicationsCount: applicationsCount[0],
+      submissionsCount: submissionsCount[0],
+      statusBreakdown,
+      recentApplications,
+      generatedAt: new Date().toLocaleString(),
+    });
+  } catch (err) {
+    console.error(err);
+    res.send("Could not generate student summary report.");
+  }
+};
+
+// Export student summary as PDF
+exports.exportSummaryPDF = async (req, res) => {
+  const user_id = req.session.user.user_id;
+  try {
+    // Get student profile
+    const [profileRows] = await db.query(
+      "SELECT profile_id, first_name, last_name, institution, course FROM student_profiles WHERE user_id = $1",
+      [user_id],
+    );
+    const profile = profileRows[0];
+
+    // Applications count
+    const [applicationsCount] = await db.query(
+      "SELECT COUNT(*) AS total_applications FROM applications WHERE student_id = $1",
+      [profile.profile_id],
+    );
+
+    // Submissions count
+    const [submissionsCount] = await db.query(
+      `SELECT COUNT(*) AS total_submissions 
+       FROM submissions s 
+       JOIN applications a ON s.application_id = a.application_id 
+       WHERE a.student_id = $1`,
+      [profile.profile_id],
+    );
+
+    // Applications by status
+    const [statusBreakdown] = await db.query(
+      `SELECT status, COUNT(*) AS count 
+       FROM applications 
+       WHERE student_id = $1 
+       GROUP BY status`,
+      [profile.profile_id],
+    );
+
+    // Recent applications
+    const [recentApplications] = await db.query(
+      `SELECT a.application_id, a.status, a.applied_at, t.title, bp.company_name
+       FROM applications a
+       JOIN tasks t ON a.task_id = t.task_id
+       JOIN business_profiles bp ON t.business_id = bp.profile_id
+       WHERE a.student_id = $1
+       ORDER BY a.applied_at DESC
+       LIMIT 5`,
+      [profile.profile_id],
+    );
+
+    // Render the same EJS template into HTML
+    const templatePath = path.join(__dirname, "../views/student_summary.ejs");
+    const htmlContent = await ejs.renderFile(templatePath, {
+      user: req.session.user,
+      profile,
+      applicationsCount: applicationsCount[0],
+      submissionsCount: submissionsCount[0],
+      statusBreakdown,
+      recentApplications,
+      generatedAt: new Date().toLocaleString(),
+    });
+
+    // Generate PDF
+    const options = { format: "A4" };
+    const file = { content: String(htmlContent) };
+    const pdfBuffer = await pdf.generatePdf(file, options);
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      "attachment; filename=Student_Summary_Report.pdf",
+    );
+    res.send(pdfBuffer);
+  } catch (err) {
+    console.error("PDF generation error:", err);
+    res.status(500).send("Could not generate student summary PDF.");
   }
 };

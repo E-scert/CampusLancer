@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Student Summary Report</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f0f4f8; /* light blue background */
+        color: #333;
+        margin: 0;
+        padding: 20px;
+      }
+
+      h2 {
+        color: #1e3a8a; /* deep blue */
+        text-align: center;
+        margin: 30px 0;
+      }
+
+      .report-container {
+        max-width: 700px;
+        margin: 20px auto;
+        background-color: #ffffff; /* white card */
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        padding: 25px;
+      }
+
+      .report-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid #e5e7eb;
+      }
+
+      .report-item:last-child {
+        border-bottom: none;
+      }
+
+      .label {
+        font-weight: bold;
+        color: #1e40af; /* medium blue */
+      }
+
+      .value {
+        font-weight: bold;
+        color: #2563eb; /* bright blue */
+      }
+
+      .back-link {
+        display: inline-block;
+        margin: 1rem auto;
+        text-decoration: none;
+        color: #2563eb;
+        font-weight: 600;
+      }
+
+      .back-link:hover {
+        text-decoration: underline;
+      }
+
+      .status-list, .recent-apps {
+        margin-top: 20px;
+      }
+
+      .status-list h3, .recent-apps h3 {
+        color: #1e3a8a;
+        margin-bottom: 10px;
+      }
+
+      .status-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #e5e7eb;
+      }
+
+      .recent-apps table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      .recent-apps th, .recent-apps td {
+        border: 1px solid #e5e7eb;
+        padding: 8px;
+        text-align: left;
+      }
+
+      .recent-apps th {
+        background-color: #f9fafb;
+        color: #1e40af;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Student-specific navigation -->
+    <%- include('partials/studentNav') %>
+
+    <h2>Student Summary Report</h2>
+
+    <a href="/student/dashboard" class="back-link">← Back to Dashboard</a>
+    <a href="/student/reports/export-pdf" class="back-link">⬇ Download PDF Report</a>
+
+    <!-- Profile and totals -->
+    <div class="report-container">
+      <div class="report-item">
+        <span class="label">Name:</span>
+        <span class="value"><%= profile.first_name %> <%= profile.last_name %></span>
+      </div>
+      <div class="report-item">
+        <span class="label">Institution:</span>
+        <span class="value"><%= profile.institution %></span>
+      </div>
+      <div class="report-item">
+        <span class="label">Course:</span>
+        <span class="value"><%= profile.course %></span>
+      </div>
+      <div class="report-item">
+        <span class="label">Total Applications:</span>
+        <span class="value"><%= applicationsCount.total_applications %></span>
+      </div>
+      <div class="report-item">
+        <span class="label">Total Submissions:</span>
+        <span class="value"><%= submissionsCount.total_submissions %></span>
+      </div>
+    </div>
+
+    <!-- Applications by status -->
+    <div class="status-list report-container">
+      <h3>Applications by Status</h3>
+      <% statusBreakdown.forEach(function(status) { %>
+        <div class="status-item">
+          <span class="label"><%= status.status %>:</span>
+          <span class="value"><%= status.count %></span>
+        </div>
+      <% }) %>
+    </div>
+
+    <!-- Recent applications -->
+    <div class="recent-apps report-container">
+      <h3>Recent Applications</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Task Title</th>
+            <th>Company</th>
+            <th>Status</th>
+            <th>Applied At</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% recentApplications.forEach(function(app) { %>
+            <tr>
+              <td><%= app.title %></td>
+              <td><%= app.company_name %></td>
+              <td><%= app.status %></td>
+              <td><%= app.applied_at.toDateString() %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top:20px;text-align:center;font-size:0.85rem;color:#666;">
+  Report generated on <%= generatedAt %>
+</div>
+  </body>
+</html>
