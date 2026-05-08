@@ -31,13 +31,21 @@ exports.getDashboard = async (req, res) => {
              ORDER BY a.applied_at DESC`,
       [profile.profile_id],
     );
+
     const [recommended] = await db.query(
       `SELECT t.*, bp.company_name
-             FROM tasks t
-             JOIN business_profiles bp ON t.business_id = bp.profile_id
-             WHERE t.status = 'open' AND t.min_skill_score <= $1
-             ORDER BY t.posted_at DESC LIMIT 5`,
-      [profile.ai_skill_score],
+   FROM tasks t
+   JOIN business_profiles bp ON t.business_id = bp.profile_id
+   WHERE t.status = 'open'
+     AND t.min_skill_score <= $1
+     AND NOT EXISTS (
+       SELECT 1 FROM applications a
+       WHERE a.task_id = t.task_id
+         AND a.student_id = $2
+     )
+   ORDER BY t.posted_at DESC
+   LIMIT 5`,
+      [profile.ai_skill_score, profile.profile_id],
     );
 
     const [submissions] = await db.query(

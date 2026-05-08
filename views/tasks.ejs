@@ -15,7 +15,9 @@
       <p>Check back soon — businesses post new tasks regularly.</p>
     </div>
   <% } else { %>
-    <div style="margin-bottom:1rem;color:var(--gray-600);font-size:0.9rem"><%= tasks.length %> open task<%= tasks.length !== 1 ? 's' : '' %> available</div>
+    <div style="margin-bottom:1rem;color:var(--gray-600);font-size:0.9rem">
+      <%= tasks.length %> open task<%= tasks.length !== 1 ? 's' : '' %> available
+    </div>
     <div class="grid-auto fade-up">
       <% tasks.forEach(task => { %>
         <div class="task-card">
@@ -26,17 +28,30 @@
             </div>
             <div class="task-card-company"><%= task.company_name %> · <%= task.industry %></div>
           </div>
-          <p style="font-size:0.87rem;color:var(--gray-600);line-height:1.55"><%= task.description.substring(0,120) %>...</p>
+          <p style="font-size:0.87rem;color:var(--gray-600);line-height:1.55">
+            <%= task.description.substring(0,120) %>...
+          </p>
           <div style="display:flex;gap:0.4rem;flex-wrap:wrap">
             <span class="badge badge-blue"><%= task.required_skill %></span>
             <span class="badge badge-gray"><%= task.task_type %></span>
             <% if (task.deadline) { %>
-              <span class="badge badge-amber">Due <%= new Date(task.deadline).toLocaleDateString('en-ZA', {day:'numeric',month:'short'}) %></span>
+              <span class="badge badge-amber">
+                Due <%= new Date(task.deadline).toLocaleDateString('en-ZA', {day:'numeric',month:'short'}) %>
+              </span>
             <% } %>
           </div>
           <div class="task-card-footer">
-            <span style="font-size:0.8rem;color:var(--gray-400)">Min score: <%= task.min_skill_score %></span>
-            <a href="/student/apply/<%= task.task_id %>" class="btn btn-primary btn-sm">Apply Now</a>
+            <span style="font-size:0.8rem;color:var(--gray-400)">
+              Min score: <%= task.min_skill_score %>
+            </span>
+
+            <% if (user && user.user_type === 'student') { %>
+              <a href="/student/apply/<%= task.task_id %>" class="btn btn-primary btn-sm">Apply Now</a>
+            <% } else if (!user) { %>
+              <a href="/register?role=student" class="btn btn-primary btn-sm">Register login as Student to Apply</a>
+            <% } else if (user.user_type === 'business') { %>
+              <span class="btn btn-disabled btn-sm">Apply (students only)</span>
+            <% } %>
           </div>
         </div>
       <% }) %>
