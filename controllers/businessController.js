@@ -3,6 +3,22 @@ const path = require("path");
 const ejs = require("ejs");
 const pdf = require("html-pdf-node");
 
+const normalizeSkill = (skill) => {
+  if (!skill || typeof skill !== "string") return "";
+  const normalized = skill.toLowerCase().trim();
+  const mapping = {
+    "node.js": "javascript",
+    nodejs: "javascript",
+    node: "javascript",
+    js: "javascript",
+    ts: "typescript",
+    csharp: "c#",
+    cpp: "c++",
+    "objective-c": "objective-c",
+  };
+  return mapping[normalized] || normalized;
+};
+
 exports.getDashboard = async (req, res) => {
   const user_id = req.session.user?.user_id;
   try {
@@ -23,21 +39,22 @@ exports.getDashboard = async (req, res) => {
 
     // Tasks posted by this business
     const [tasks] = await db.query(
-      `SELECT t.*, COALESCE(app_counts.total_applicants, 0) AS total_applicants
+      `SELECT t.*, COALESCE(accepted_counts.total_accepted, 0) AS accepted_count
    FROM tasks t
    LEFT JOIN (
-       SELECT task_id, COUNT(*) AS total_applicants
+       SELECT task_id, COUNT(*) AS total_accepted
        FROM applications
+       WHERE status = 'accepted'
        GROUP BY task_id
-   ) app_counts ON t.task_id = app_counts.task_id
+   ) accepted_counts ON t.task_id = accepted_counts.task_id
    WHERE t.business_id = $1
    ORDER BY t.posted_at DESC`,
       [profile.profile_id],
     );
 
-    // Calculate total applicants across all tasks
+    // Calculate total accepted across all tasks
     const totalApplicants = tasks.reduce(
-      (sum, t) => sum + Number(t.total_applicants),
+      (sum, t) => sum + Number(t.accepted_count),
       0,
     );
     // Top applicants
@@ -47,7 +64,7 @@ exports.getDashboard = async (req, res) => {
        FROM applications a
        JOIN student_profiles sp ON a.student_id = sp.profile_id
        JOIN tasks t ON a.task_id = t.task_id
-       WHERE t.business_id = $1
+       WHERE t.business_id = $1 AND a.status = 'accepted'
        ORDER BY sp.ai_skill_score DESC LIMIT 10`,
       [profile.profile_id],
     );
@@ -91,17 +108,34 @@ exports.postPostTask = async (req, res) => {
     required_skill,
     min_skill_score,
     task_type,
+    max_applicants,
     deadline,
   } = req.body;
   const user_id = req.session.user.user_id;
+
+  const requiredSkills = required_skill
+    ? required_skill
+        .split(",")
+        .map((skill) => normalizeSkill(skill))
+        .filter(Boolean)
+    : [];
+
+  if (!requiredSkills.length) {
+    return res.render("post_task", {
+      user: req.session.user,
+      error:
+        "Please enter at least one programming language as the required skill.",
+    });
+  }
+
   try {
     const [pRows] = await db.query(
       "SELECT profile_id FROM business_profiles WHERE user_id = $1",
       [user_id],
     );
     await db.query(
-      `INSERT INTO tasks (business_id, title, description, required_skill, min_skill_score, task_type, deadline)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      `INSERT INTO tasks (business_id, title, description, required_skill, min_skill_score, task_type, max_applicants, deadline)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
       [
         pRows[0].profile_id,
         title,
@@ -109,6 +143,7 @@ exports.postPostTask = async (req, res) => {
         required_skill,
         min_skill_score || 0,
         task_type,
+        max_applicants || null,
         deadline || null,
       ],
     );
@@ -134,7 +169,7 @@ exports.getApplicants = async (req, res) => {
               sp.first_name, sp.last_name, sp.institution, sp.ai_skill_score, sp.github_username
        FROM applications a
        JOIN student_profiles sp ON a.student_id = sp.profile_id
-       WHERE a.task_id = $1
+       WHERE a.task_id = $1 AND a.status = 'accepted'
        ORDER BY sp.ai_skill_score DESC`,
       [task_id],
     );
@@ -149,25 +184,24 @@ exports.getApplicants = async (req, res) => {
   }
 };
 
-// Update application status
-exports.updateApplicationStatus = async (req, res) => {
-  const { application_id, status } = req.body;
-  try {
-    await db.query(
-      "UPDATE applications SET status = $1 WHERE application_id = $2",
-      [status, application_id],
-    );
-    res.redirect("back");
-  } catch (err) {
-    console.error(err);
-    res.send("Could not update status.");
-  }
-};
-
 // Delete a task
 exports.deleteTask = async (req, res) => {
   const { task_id } = req.params;
   try {
+    const [countRows] = await db.query(
+      "SELECT COUNT(*) AS total_accepted FROM applications WHERE task_id = $1 AND status = 'accepted'",
+      [task_id],
+    );
+    const totalAccepted = Number(countRows[0]?.total_accepted || 0);
+
+    if (totalAccepted > 0) {
+      return res
+        .status(400)
+        .send(
+          "Cannot delete task because students have already been accepted. Please close the task instead.",
+        );
+    }
+
     await db.query("DELETE FROM tasks WHERE task_id = $1", [task_id]);
     res.redirect("/business/dashboard");
   } catch (err) {
@@ -313,7 +347,7 @@ exports.getSummaryReport = async (req, res) => {
       `SELECT COUNT(*) AS total_applicants
        FROM applications a
        JOIN tasks t ON a.task_id = t.task_id
-       WHERE t.business_id = $1 AND a.applied_at BETWEEN $2 AND $3`,
+       WHERE t.business_id = $1 AND a.status = 'accepted' AND a.applied_at BETWEEN $2 AND $3`,
       [profile.profile_id, startDate, endDate],
     );
 
@@ -385,7 +419,7 @@ exports.exportSummaryPDF = async (req, res) => {
       `SELECT COUNT(*) AS total_applicants
        FROM applications a
        JOIN tasks t ON a.task_id = t.task_id
-       WHERE t.business_id = $1 AND a.applied_at BETWEEN $2 AND $3`,
+       WHERE t.business_id = $1 AND a.status = 'accepted' AND a.applied_at BETWEEN $2 AND $3`,
       [profile.profile_id, startDate, endDate],
     );
 

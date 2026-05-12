@@ -93,7 +93,10 @@
                 <td><span class="badge badge-gray"><%= task.task_type %></span></td>
                 <td>
                   <a href="/business/applicants/<%= task.task_id %>" style="color:var(--blue-500);font-weight:600">
-                    <%= task.total_applicants %> applied
+                    <%= task.accepted_count %> accepted
+                    <% if (task.max_applicants) { %>
+                      / <%= task.max_applicants %>
+                    <% } %>
                   </a>
                 </td>
                 <td>
@@ -108,7 +111,7 @@
                 <td style="display:flex;gap:0.5rem;align-items:center">
                   <a href="/business/applicants/<%= task.task_id %>" class="btn btn-outline btn-sm">View</a>
                   <form method="POST" action="/business/task/delete/<%= task.task_id %>" style="display:inline" onsubmit="return confirm('Delete this task?')">
-                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                    <button type="submit" class="btn btn-danger btn-sm" <%= task.accepted_count > 0 ? 'disabled title="Cannot delete task with accepted applicants"' : '' %>>Delete</button>
                   </form>
                 </td>
               </tr>

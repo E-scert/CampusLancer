@@ -24,11 +24,6 @@ router.get(
   isBusiness,
   businessController.getApplicants,
 );
-router.post(
-  "/application/update",
-  isBusiness,
-  businessController.updateApplicationStatus,
-);
 router.post("/task/delete/:task_id", isBusiness, businessController.deleteTask);
 
 // ── Feedback ───────────────────────────────────────────────

@@ -22,27 +22,20 @@
       <% if (task.deadline) { %>
         <span class="badge badge-amber">Deadline: <%= new Date(task.deadline).toLocaleDateString('en-ZA') %></span>
       <% } %>
-    </div>
-  </div>
-
-  <div class="card fade-up-2">
-    <div class="section-title" style="margin-bottom:1.25rem"><span class="dot"></span> Your Application</div>
-
-    <% if (error) { %>
-      <div class="alert alert-error">⚠ <%= error %></div>
-    <% } %>
+        <% if (task.max_applicants != null) { %>
+          <span class="badge badge-green">
+            <%= task.slots_remaining %> of <%= task.max_applicants %> spots left
+          </span>
+        <% } %>
 
     <form method="POST" action="/student/apply">
       <input type="hidden" name="task_id" value="<%= task.task_id %>"/>
       <div class="form-group">
-        <label class="form-label">Cover note</label>
-        <textarea name="cover_note" class="form-textarea" style="min-height:160px"
-          placeholder="Tell the business why you're the right person for this task. Mention relevant skills, projects, or experience..."></textarea>
-        <span class="form-hint">A strong cover note significantly improves your chances.</span>
+        <p style="color:var(--gray-600);margin-bottom:0.75rem">The system will automatically check your GitHub profile for the required skills.</p>
       </div>
       <div style="display:flex;gap:1rem;justify-content:flex-end">
         <a href="/tasks" class="btn btn-ghost">Cancel</a>
-        <button type="submit" class="btn btn-primary">Submit Application</button>
+        <button type="submit" class="btn btn-primary">Apply</button>
       </div>
     </form>
   </div>

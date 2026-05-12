@@ -44,6 +44,11 @@
             <span style="font-size:0.8rem;color:var(--gray-400)">
               Min score: <%= task.min_skill_score %>
             </span>
+            <% if (task.max_applicants != null) { %>
+              <span style="font-size:0.8rem;color:var(--gray-600);margin-left:1rem">
+                <%= task.slots_remaining %> of <%= task.max_applicants %> slots available
+              </span>
+            <% } %>
 
             <% if (user && user.user_type === 'student') { %>
               <a href="/student/apply/<%= task.task_id %>" class="btn btn-primary btn-sm">Apply Now</a>

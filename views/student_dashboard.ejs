@@ -64,7 +64,7 @@
   <div class="grid-3 fade-up" style="margin-bottom:2.5rem">
     <div class="stat-card">
       <div class="stat-label">Applications</div>
-      <div class="stat-value"><%= applications.length %></div>
+      <div class="stat-value"><%= applications.filter(a => a.status !== 'rejected').length %></div>
       <div class="stat-sub">Tasks applied to</div>
     </div>
     <div class="stat-card">
@@ -162,7 +162,11 @@
             <div class="task-card-footer">
               <div style="display:flex;gap:0.4rem;flex-wrap:wrap">
                 <span class="badge badge-blue"><%= task.required_skill %></span>
+                <span class="badge badge-gray">Score ≥ <%= task.min_skill_score %></span>
                 <span class="badge badge-gray"><%= task.task_type %></span>
+                <% if (task.max_applicants != null) { %>
+                  <span class="badge badge-green"><%= task.slots_remaining %> / <%= task.max_applicants %> slots</span>
+                <% } %>
               </div>
               <a href="/student/apply/<%= task.task_id %>" class="btn btn-primary btn-sm">Apply</a>
             </div>
@@ -210,16 +214,17 @@
                 <% } else { %>
                   <span class="badge badge-amber">Pending</span>
                 <% } %>
+                <% if (app.status === 'rejected' && app.status_reason) { %>
+                  <div style="margin-top:0.35rem;font-size:0.78rem;color:var(--gray-500)">Reason: <%= app.status_reason %></div>
+                <% } %>
               </td>
               <td>
                 <% if (app.status === 'accepted') { %>
                   <a href="/student/submit/<%= app.application_id %>" class="btn btn-primary btn-sm">Submit Work</a>
                 <% } else if (app.status === 'pending') { %>
                   <form action="/student/<%= app.application_id %>/cancel" method="POST" style="display:inline">
-                    <button type="submit" class="btn btn-warning btn-sm"onclick="return confirm('Are you sure you want to cancel this application?');"
->Cancel</button>
+                    <button type="submit" class="btn btn-warning btn-sm" onclick="return confirm('Are you sure you want to cancel this application?');">Cancel</button>
                   </form>
-
                 <% } else { %>
                   <span style="font-size:0.82rem;color:var(--gray-400)">No actions available</span>
                 <% } %>

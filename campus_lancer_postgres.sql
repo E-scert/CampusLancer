@@ -64,6 +64,7 @@ CREATE TABLE IF NOT EXISTS tasks (
     description      TEXT          NOT NULL,
     required_skill   VARCHAR(255)  NOT NULL,
     min_skill_score  INT           DEFAULT 0,
+    max_applicants   INT           DEFAULT NULL,
     task_type        VARCHAR(20)   NOT NULL DEFAULT 'remote' CHECK (task_type IN ('remote', 'on-site', 'hybrid')),
     status           VARCHAR(20)   NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'in_progress', 'closed')),
     posted_at        TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -81,6 +82,7 @@ CREATE TABLE IF NOT EXISTS applications (
     student_id      INT           NOT NULL,
     cover_note      TEXT          DEFAULT NULL,
     status          VARCHAR(20)   NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'accepted', 'rejected')),
+    status_reason   TEXT          DEFAULT NULL,
     applied_at      TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (application_id),
     UNIQUE (task_id, student_id),
@@ -108,47 +110,47 @@ CREATE TABLE IF NOT EXISTS submissions (
 -- ============================================================
 
 INSERT INTO users (email, password_hash, user_type) VALUES
-('thabo.mokoena@students.wits.ac.za',    'hashed_pw_1', 'student'),
-('lerato.dlamini@students.uj.ac.za',     'hashed_pw_2', 'student'),
-('sipho.nkosi@students.tut.ac.za',       'hashed_pw_3', 'student'),
-('amahle.zulu@students.uct.ac.za',       'hashed_pw_4', 'student'),
-('kyle.venter@students.cput.ac.za',      'hashed_pw_5', 'student'),
-('careers@innovatetech.co.za',           'hashed_pw_6', 'business'),
-('hr@pixelstudio.co.za',                 'hashed_pw_7', 'business'),
-('talent@databridge.co.za',              'hashed_pw_8', 'business');
-
-INSERT INTO student_profiles (user_id, first_name, last_name, institution, course, github_username, ai_skill_score, bio) VALUES
-(1, 'Thabo',  'Mokoena', 'University of the Witwatersrand', 'BSc Computer Science',    'thabodev',     82, 'Passionate about backend development and APIs.'),
-(2, 'Lerato', 'Dlamini', 'University of Johannesburg',      'BSc Information Systems', 'lerato_codes', 67, 'Frontend enthusiast who loves clean UI design.'),
-(3, 'Sipho',  'Nkosi',   'Tshwane University of Technology','Diploma IT',              'sipho_nkosi',  55, 'Interested in databases and data engineering.'),
-(4, 'Amahle', 'Zulu',    'University of Cape Town',         'BSc Computer Science',    'amahle_z',     90, 'Full-stack developer with a focus on React and Node.js.'),
-(5, 'Kyle',   'Venter',  'Cape Peninsula University of Tech','BEng Computer Systems',  'kyleventer',   74, 'Hardware and embedded systems enthusiast.');
+('hello@nexatech.co.za',                 '$2a$10$l/iKtozA8ZKxP6moCiIdouuq97UjquYFc.MVUPfCY5miVSKAH83vm',    'business'),
+('letsbuild@bytebridge.co.za',           '$2a$10$l/iKtozA8ZKxP6moCiIdouuq97UjquYFc.MVUPfCY5miVSKAH83vm',    'business'),
+('connect@cloudnest.co.za',              '$2a$10$l/iKtozA8ZKxP6moCiIdouuq97UjquYFc.MVUPfCY5miVSKAH83vm',    'business'),
+('smartsolutions@intelli.co.za',         '$2a$10$l/iKtozA8ZKxP6moCiIdouuq97UjquYFc.MVUPfCY5miVSKAH83vm',    'business'),
+('create@novapixel.co.za',               '$2a$10$l/iKtozA8ZKxP6moCiIdouuq97UjquYFc.MVUPfCY5miVSKAH83vm',    'business');
 
 INSERT INTO business_profiles (user_id, company_name, company_email, industry, website_url, description) VALUES
-(6, 'InnovateTech', 'careers@innovatetech.co.za', 'Software Development', 'https://innovatetech.co.za', 'We build enterprise software solutions for African markets.'),
-(7, 'Pixel Studio',  'hr@pixelstudio.co.za',       'Design & Creative',    'https://pixelstudio.co.za',  'Award-winning digital design studio specialising in brand identity.'),
-(8, 'DataBridge',    'talent@databridge.co.za',    'Data Analytics',       'https://databridge.co.za',   'Data consultancy helping businesses make smarter decisions.');
+(6, 'NexaTech Solutions', 'hello@nexatech.co.za', 'Software Development', 'https://nexatech.co.za', 'We build scalable enterprise software and SaaS platforms for modern businesses.'),
+(7, 'ByteBridge Technologies', 'letsbuild@bytebridge.co.za', 'Data Analytics & Databases', 'https://bytebridge.co.za', 'We help businesses transform raw data into valuable insights and analytics.'),
+(8, 'CloudNest Innovations', 'connect@cloudnest.co.za', 'Cloud Computing & DevOps', 'https://cloudnest.co.za', 'Delivering cloud infrastructure, automation, and DevOps solutions for scalable systems.'),
+(9, 'IntelliWave Systems', 'smartsolutions@intelli.co.za', 'AI & Smart Systems', 'https://intelliwave.co.za', 'Building intelligent AI-driven systems and automation solutions for enterprises.'),
+(10, 'NovaPixel Technologies', 'create@novapixel.co.za', 'UI/UX Design', 'https://novapixel.co.za', 'We focus on beginner UI/UX and frontend design projects for students.');
 
-INSERT INTO tasks (business_id, title, description, required_skill, min_skill_score, task_type, status, deadline) VALUES
-(1, 'Build a REST API for mobile app',   'Create a Node.js REST API with authentication and CRUD operations for our new mobile app.',       'Node.js',      70, 'remote',  'open',        '2025-08-01'),
-(1, 'Fix bugs in React dashboard',       'Identify and resolve UI bugs in our internal analytics dashboard built with React.',               'React',        60, 'remote',  'open',        '2025-07-15'),
-(2, 'Design a brand identity package',   'Create a logo, colour palette, and typography guide for a new fintech startup.',                  'UI/UX Design', 50, 'on-site', 'open',        '2025-07-30'),
-(3, 'Build a sales data pipeline',       'Design and implement an ETL pipeline that pulls sales data from multiple CSV sources into PostgreSQL.', 'SQL',     55, 'hybrid',  'open',        '2025-08-15'),
-(3, 'Data visualisation dashboard',      'Build an interactive dashboard using Python and Matplotlib to visualise monthly revenue trends.',  'Python',       65, 'remote',  'in_progress', '2025-07-20');
+INSERT INTO tasks (business_id, title, description, required_skill, min_skill_score, task_type, status, max_applicants, deadline) VALUES
+(6, 'Build Authentication Microservice', 'Create a secure JWT-based authentication microservice using Node.js and Express.', 'Node.js', 75, 'remote', 'open', 4, '2026-06-15'),
+(6, 'Develop SaaS Billing Module', 'Implement a billing and subscription management module for SaaS customers.', 'Backend Development', 70, 'hybrid', 'open', 3, '2026-06-20'),
+(6, 'Optimize REST API Performance', 'Improve API response times and optimize backend queries for better scalability.', 'API Optimization', 80, 'remote', 'open', 2, '2026-06-25'),
+(6, 'Create Admin Dashboard Backend', 'Build backend services and analytics endpoints for an admin dashboard.', 'Express.js', 65, 'remote', 'open', 3, '2026-06-18'),
+(6, 'Database Schema Refactor', 'Normalize and optimize the company database schema for performance and scalability.', 'SQL', 60, 'hybrid', 'open', 4, '2026-06-22'),
+(7, 'Build ETL Data Pipeline', 'Design and implement an ETL pipeline to process data from multiple CSV sources into PostgreSQL.', 'Data Engineering', 75, 'hybrid', 'open', 3, '2026-06-30'),
+(7, 'Create Sales Analytics Dashboard', 'Build a dashboard to visualize monthly sales and customer growth trends.', 'Power BI', 65, 'remote', 'open', 3, '2026-06-18'),
+(7, 'Develop Data Cleaning Automation Scripts', 'Write Python scripts to automate data cleaning and preprocessing workflows.', 'Python', 60, 'remote', 'open', 3, '2026-06-12'),
+(7, 'Optimize PostgreSQL Database Queries', 'Improve query efficiency and indexing strategies for large-scale databases.', 'SQL Optimization', 80, 'on-site', 'open', 2, '2026-06-28'),
+(7, 'Build Customer Segmentation Model', 'Create a machine learning clustering model for customer segmentation analysis.', 'Machine Learning', 85, 'remote', 'open', 2, '2026-07-05'),
+(8, 'Deploy CI/CD Pipeline', 'Configure GitHub Actions for automated testing and deployments.', 'DevOps', 70, 'remote', 'open', 3, '2026-06-10'),
+(8, 'Configure AWS Infrastructure', 'Set up EC2, S3, and load balancing services for production deployment.', 'AWS', 75, 'hybrid', 'open', 3, '2026-06-15'),
+(8, 'Dockerize Existing Applications', 'Convert legacy applications into Docker containers for deployment consistency.', 'Docker', 65, 'remote', 'open', 4, '2026-06-08'),
+(8, 'Set Up Kubernetes Cluster', 'Deploy and manage a Kubernetes cluster for high-availability applications.', 'Kubernetes', 85, 'hybrid', 'open', 2, '2026-06-25'),
+(8, 'Implement Monitoring & Logging System', 'Configure centralized monitoring and logging using Prometheus and Grafana.', 'System Monitoring', 70, 'on-site', 'open', 3, '2026-06-20'),
+(9, 'Develop AI Chatbot', 'Build a customer-support chatbot using NLP and machine learning models.', 'Machine Learning', 85, 'remote', 'open', 2, '2026-06-30'),
+(9, 'Build Predictive Analytics Model', 'Develop forecasting models for business performance prediction.', 'Data Science', 80, 'hybrid', 'open', 3, '2026-07-10'),
+(9, 'Create Recommendation System', 'Build a recommendation engine for personalized product suggestions.', 'Python', 75, 'remote', 'open', 3, '2026-06-28'),
+(9, 'Integrate Voice Recognition API', 'Integrate speech-to-text functionality into an enterprise platform.', 'AI Integration', 70, 'hybrid', 'open', 2, '2026-06-22'),
+(9, 'Design Workflow Automation Engine', 'Develop a rules-based workflow automation system for internal processes.', 'System Design', 80, 'remote', 'open', 3, '2026-07-01'),
+(10, 'Design Restaurant Landing Page', 'Create a visually appealing restaurant landing page using HTML and CSS.', 'HTML & CSS', 15, 'remote', 'open', 4, '2026-06-12'),
+(10, 'Build Animated Button Effects', 'Create interactive hover animations for website buttons using CSS.', 'CSS', 10, 'remote', 'open', 4, '2026-06-08'),
+(10, 'Create Music Player UI', 'Design a simple music player interface with responsive layout.', 'CSS & JavaScript', 20, 'hybrid', 'open', 4, '2026-06-15'),
+(10, 'Build Simple React Gallery', 'Design an image gallery component using React JSX.', 'JSX & React', 25, 'remote', 'open', 4, '2026-06-18'),
+(10, 'Design Signup Form UI', 'Build a clean signup form with validation styling and responsive design.', 'HTML, CSS & JS', 18, 'remote', 'open', 4, '2026-06-10');
 
-INSERT INTO applications (task_id, student_id, cover_note, status) VALUES
-(1, 4, 'I have built multiple REST APIs with Node.js and Express. I am confident I can deliver this.',     'accepted'),
-(1, 1, 'I have strong Node.js experience and have worked on similar projects at varsity.',                 'pending'),
-(2, 2, 'React is my strongest skill. I have fixed complex state management bugs in several projects.',     'pending'),
-(3, 2, 'I have a portfolio of brand identities I created for student-run businesses.',                    'accepted'),
-(4, 3, 'I have experience with PostgreSQL and have built ETL processes as part of my diploma project.',    'pending'),
-(5, 3, 'Python and data visualisation are my focus area. I use Matplotlib and Seaborn regularly.',        'accepted'),
-(5, 1, 'I have done data visualisation modules and am comfortable with Python libraries.',                 'rejected');
-
-INSERT INTO submissions (application_id, submission_url, notes, feedback) VALUES
-(1, 'https://github.com/amahle_z/innovatetech-api',      'Completed all endpoints. Auth uses JWT.',        'Excellent work, clean code and well documented.'),
-(4, 'https://github.com/lerato_codes/pixelstudio-brand', 'Brand pack includes SVG and PNG exports.',       'Very creative. Minor changes requested on colour palette.'),
-(6, 'https://github.com/sipho_nkosi/databridge-dash',    'Used Matplotlib and Seaborn for all charts.',    'Good work. Add export to PDF next.');
+-- No preloaded applications or submissions for the new business test data.
 
 -- ── Add language and suggestions columns (run if upgrading existing DB) ──
 ALTER TABLE student_profiles ADD COLUMN IF NOT EXISTS top_languages TEXT DEFAULT NULL;

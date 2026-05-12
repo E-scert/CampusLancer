@@ -50,28 +50,8 @@
               <% if (a.github_username) { %>
                 <a href="https://github.com/<%= a.github_username %>" target="_blank" class="btn btn-ghost btn-sm">GitHub</a>
               <% } %>
-              <% if (a.status === 'accepted') { %>
-                <span class="badge badge-green">Accepted</span>
-              <% } else if (a.status === 'rejected') { %>
-                <span class="badge badge-red">Rejected</span>
-              <% } else { %>
-                <span class="badge badge-amber">Pending</span>
-              <% } %>
+              <span class="badge badge-green">Accepted</span>
             </div>
-            <% if (a.status === 'pending') { %>
-              <div style="display:flex;gap:0.5rem">
-                <form method="POST" action="/business/application/update" style="display:inline">
-                  <input type="hidden" name="application_id" value="<%= a.application_id %>"/>
-                  <input type="hidden" name="status" value="accepted"/>
-                  <button type="submit" class="btn btn-primary btn-sm">Accept</button>
-                </form>
-                <form method="POST" action="/business/application/update" style="display:inline">
-                  <input type="hidden" name="application_id" value="<%= a.application_id %>"/>
-                  <input type="hidden" name="status" value="rejected"/>
-                  <button type="submit" class="btn btn-danger btn-sm">Reject</button>
-                </form>
-              </div>
-            <% } %>
           </div>
         </div>
       <% }) %>

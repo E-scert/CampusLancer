@@ -9,6 +9,7 @@ const studentRoutes = require("./routes/studentRoutes");
 const businessRoutes = require("./routes/businessRoutes");
 const taskRoutes = require("./routes/taskRoutes");
 const adminRoutes = require("./routes/adminRoutes");
+const db = require("./config/db");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -37,6 +38,23 @@ app.use("/student", studentRoutes);
 app.use("/business", businessRoutes);
 app.use("/tasks", taskRoutes);
 app.use("/admin", adminRoutes);
+// ── Ensure optional DB fields exist ──────────────────────────
+(async () => {
+  try {
+    await db.query(
+      "ALTER TABLE tasks ADD COLUMN IF NOT EXISTS max_applicants INT DEFAULT NULL",
+    );
+    await db.query(
+      "ALTER TABLE applications ADD COLUMN IF NOT EXISTS status_reason TEXT DEFAULT NULL",
+    );
+    console.log(
+      "DB migration complete: max_applicants and status_reason columns ensured.",
+    );
+  } catch (err) {
+    console.error("DB migration error:", err.message);
+  }
+})();
+
 // ── Start ───────────────────────────────────────────────────
 app.listen(PORT, () => {
   console.log(`CampusLancer running at http://localhost:${PORT}`);

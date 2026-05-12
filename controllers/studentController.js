@@ -1,5 +1,6 @@
 const db = require("../config/db");
 const scanGitHub = require("../config/githubScanner");
+const { decideApplicationStatus } = require("../config/autoApplicationDecider");
 const path = require("path");
 const ejs = require("ejs");
 const pdf = require("html-pdf-node");
@@ -23,7 +24,7 @@ exports.getDashboard = async (req, res) => {
       : [];
 
     const [applications] = await db.query(
-      `SELECT a.*, t.title, t.required_skill, t.task_type, bp.company_name
+      `SELECT a.*, t.title, t.required_skill, t.task_type, t.max_applicants, t.min_skill_score, bp.company_name
              FROM applications a
              JOIN tasks t ON a.task_id = t.task_id
              JOIN business_profiles bp ON t.business_id = bp.profile_id
@@ -33,18 +34,30 @@ exports.getDashboard = async (req, res) => {
     );
 
     const [recommended] = await db.query(
-      `SELECT t.*, bp.company_name
-   FROM tasks t
-   JOIN business_profiles bp ON t.business_id = bp.profile_id
-   WHERE t.status = 'open'
-     AND t.min_skill_score <= $1
-     AND NOT EXISTS (
-       SELECT 1 FROM applications a
-       WHERE a.task_id = t.task_id
-         AND a.student_id = $2
-     )
-   ORDER BY t.posted_at DESC
-   LIMIT 5`,
+      `SELECT t.*, bp.company_name,
+              COALESCE(accepted_counts.total_accepted, 0) AS accepted_count,
+              CASE
+                WHEN t.max_applicants IS NOT NULL THEN GREATEST(t.max_applicants - COALESCE(accepted_counts.total_accepted, 0), 0)
+                ELSE NULL
+              END AS slots_remaining
+       FROM tasks t
+       JOIN business_profiles bp ON t.business_id = bp.profile_id
+       LEFT JOIN (
+           SELECT task_id, COUNT(*) AS total_accepted
+           FROM applications
+           WHERE status = 'accepted'
+           GROUP BY task_id
+       ) accepted_counts ON t.task_id = accepted_counts.task_id
+       WHERE t.status = 'open'
+         AND t.min_skill_score <= $1
+         AND NOT EXISTS (
+           SELECT 1 FROM applications a
+           WHERE a.task_id = t.task_id
+             AND a.student_id = $2
+         )
+         AND (t.max_applicants IS NULL OR COALESCE(accepted_counts.total_accepted, 0) < t.max_applicants)
+       ORDER BY t.posted_at ASC
+       LIMIT 4`,
       [profile.ai_skill_score, profile.profile_id],
     );
 
@@ -112,14 +125,43 @@ exports.rescanGitHub = async (req, res) => {
 
 exports.getApply = async (req, res) => {
   const { task_id } = req.params;
+
+  //gurd : only students can apply
+  if (!req.session.user || req.session.user.user_type !== "student") {
+    return res.status(403).send("Only studnets can apply for tasks.");
+  }
   try {
     const [rows] = await db.query(
-      `SELECT t.*, bp.company_name, bp.industry
-             FROM tasks t JOIN business_profiles bp ON t.business_id = bp.profile_id
-             WHERE t.task_id = $1`,
+      `SELECT t.*, bp.company_name, bp.industry,
+              COALESCE(accepted_counts.total_accepted, 0) AS accepted_count,
+              CASE
+                WHEN t.max_applicants IS NOT NULL THEN GREATEST(t.max_applicants - COALESCE(accepted_counts.total_accepted, 0), 0)
+                ELSE NULL
+              END AS slots_remaining
+       FROM tasks t
+       JOIN business_profiles bp ON t.business_id = bp.profile_id
+       LEFT JOIN (
+           SELECT task_id, COUNT(*) AS total_accepted
+           FROM applications
+           WHERE status = 'accepted'
+           GROUP BY task_id
+       ) accepted_counts ON t.task_id = accepted_counts.task_id
+       WHERE t.task_id = $1`,
       [task_id],
     );
-    res.render("apply", { user: req.session.user, task: rows[0], error: null });
+    const task = rows[0];
+    if (
+      !task ||
+      task.status !== "open" ||
+      (task.max_applicants !== null && task.slots_remaining <= 0)
+    ) {
+      return res.render("apply", {
+        user: req.session.user,
+        task: task || {},
+        error: "This task is no longer accepting applications.",
+      });
+    }
+    res.render("apply", { user: req.session.user, task, error: null });
   } catch (err) {
     console.error(err);
     res.send("Task not found.");
@@ -127,17 +169,101 @@ exports.getApply = async (req, res) => {
 };
 
 exports.postApply = async (req, res) => {
-  const { task_id, cover_note } = req.body;
+  const { task_id } = req.body;
+
+  if (!req.session.user || req.session.user.user_type !== "student") {
+    return res.status(403).send("Only studnets can apply for tasks");
+  }
   const user_id = req.session.user.user_id;
   try {
     const [pRows] = await db.query(
-      "SELECT profile_id FROM student_profiles WHERE user_id = $1",
+      "SELECT profile_id, github_username FROM student_profiles WHERE user_id = $1",
       [user_id],
     );
-    await db.query(
-      "INSERT INTO applications (task_id, student_id, cover_note) VALUES ($1, $2, $3)",
-      [task_id, pRows[0].profile_id, cover_note],
+    const studentProfile = pRows[0];
+
+    // Verify task is still open and check max applicants if configured
+    const [tRows] = await db.query(
+      "SELECT required_skill, status, max_applicants FROM tasks WHERE task_id = $1",
+      [task_id],
     );
+    const task = tRows[0];
+    if (!task || task.status !== "open") {
+      return res.render("apply", {
+        user: req.session.user,
+        task: task || {},
+        error: "This task is no longer open.",
+      });
+    }
+
+    const [acceptedRows] = await db.query(
+      "SELECT COUNT(*) AS accepted_count FROM applications WHERE task_id = $1 AND status = 'accepted'",
+      [task_id],
+    );
+    const acceptedCount = Number(acceptedRows[0].accepted_count || 0);
+    if (
+      task.max_applicants !== null &&
+      task.max_applicants !== undefined &&
+      acceptedCount >= task.max_applicants
+    ) {
+      await db.query("UPDATE tasks SET status = 'closed' WHERE task_id = $1", [
+        task_id,
+      ]);
+      return res.render("apply", {
+        user: req.session.user,
+        task,
+        error: "This task has reached its applicant limit.",
+      });
+    }
+
+    const requiredSkillString = task.required_skill;
+    const requiredSkills = requiredSkillString
+      ? requiredSkillString.split(",").map((s) => s.trim())
+      : [];
+
+    // Auto-decide status before inserting the application
+    let status = "rejected";
+    let statusReason = null;
+    if (studentProfile.github_username) {
+      try {
+        const decision = await decideApplicationStatus(
+          studentProfile.github_username,
+          requiredSkills,
+        );
+        status = decision.status || "rejected";
+        statusReason = decision.reason || null;
+      } catch (err) {
+        console.error("Auto-decision failed:", err.message);
+        statusReason = "GitHub skill matching failed.";
+      }
+    } else {
+      console.warn(
+        "No GitHub username found for student profile",
+        studentProfile.profile_id,
+      );
+      statusReason = "GitHub username is missing.";
+    }
+
+    const [insertResult] = await db.query(
+      "INSERT INTO applications (task_id, student_id, status, status_reason) VALUES ($1, $2, $3, $4) RETURNING application_id",
+      [task_id, studentProfile.profile_id, status, statusReason],
+    );
+    const application_id = insertResult.application_id;
+
+    if (status === "accepted" && task.max_applicants != null) {
+      const [newAcceptedRows] = await db.query(
+        "SELECT COUNT(*) AS accepted_count FROM applications WHERE task_id = $1 AND status = 'accepted'",
+        [task_id],
+      );
+      const newAcceptedCount = Number(newAcceptedRows[0].accepted_count || 0);
+      if (newAcceptedCount >= task.max_applicants) {
+        await db.query(
+          "UPDATE tasks SET status = 'closed' WHERE task_id = $1",
+          [task_id],
+        );
+      }
+    }
+
     res.redirect("/student/dashboard");
   } catch (err) {
     console.error(err);
