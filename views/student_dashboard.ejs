@@ -105,7 +105,7 @@
               </div>
               <!-- Progress bar -->
               <div style="height:6px;background:var(--gray-100);border-radius:999px;overflow:hidden">
-                <!-- <div style="height:100%;width: <%= Math.min(100, (lang.count / languages[0].count) * 100) %>%;background:var(--blue-<%= i === 0 ? '500' : i === 1 ? '400' : '300' %>);border-radius:999px;transition:width 0.6s ease"></div> -->
+                <div style="height:100%;width:<%= Math.min(100, (lang.count / languages[0].count) * 100) %>%;background:<%= i === 0 ? 'var(--blue-500)' : i === 1 ? 'var(--blue-400)' : 'var(--blue-300)' %>;border-radius:999px;transition:width 0.6s ease"></div>
               </div>
               <div style="font-size:0.75rem;color:var(--gray-500);margin-top:0.25rem"><%= lang.jobs %></div>
             </div>
@@ -162,7 +162,7 @@
             <div class="task-card-footer">
               <div style="display:flex;gap:0.4rem;flex-wrap:wrap">
                 <span class="badge badge-blue"><%= task.required_skill %></span>
-                <span class="badge badge-gray">Score ≥ <%= task.min_skill_score %></span>
+                <span class="badge badge-gray">Score <%= task.min_skill_score %></span>
                 <span class="badge badge-gray"><%= task.task_type %></span>
                 <% if (task.max_applicants != null) { %>
                   <span class="badge badge-green"><%= task.slots_remaining %> / <%= task.max_applicants %> slots</span>
@@ -256,6 +256,7 @@
             <th>Company</th>
             <th>Submission</th>
             <th>Notes</th>
+            <th>Endorsement</th>
             <th>Feedback</th>
           </tr>
         </thead>
@@ -264,9 +265,23 @@
             <tr>
               <td><%= s.task_title %></td>
               <td><%= s.company_name %></td>
-              <td><a href="<%= s.submission_url %>" target="_blank">View</a></td>
+              <td><a href="<%= s.submission_url %>" target="_blank" class="btn btn-outline btn-sm" style="color:var(--blue-700);border-color:var(--blue-200);">View</a></td>
               <td><%= s.notes || '-' %></td>
-              <td><%= s.feedback || 'Pending review' %></td>
+              <td>
+                <% if (s.endorsement_status === 'approved') { %>
+                  <span class="badge badge-green">Approved</span>
+                <% } else if (s.endorsement_status === 'needs_revision') { %>
+                  <span class="badge badge-amber">Needs revision</span>
+                <% } else if (s.endorsement_status === 'rejected') { %>
+                  <span class="badge badge-red">Rejected</span>
+                <% } else { %>
+                  <span class="badge badge-gray">Pending</span>
+                <% } %>
+                <% if (s.endorsement_rating) { %>
+                  <span style="margin-left:0.35rem;font-weight:700;"><%= s.endorsement_rating %>★</span>
+                <% } %>
+              </td>
+              <td><%= s.feedback || 'Waiting for business review' %></td>
             </tr>
           <% }) %>
         </tbody>

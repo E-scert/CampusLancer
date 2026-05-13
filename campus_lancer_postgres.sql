@@ -99,6 +99,9 @@ CREATE TABLE IF NOT EXISTS submissions (
     submission_url   VARCHAR(500)  NOT NULL,
     notes            TEXT          DEFAULT NULL,
     feedback         TEXT          DEFAULT NULL,
+    endorsement_rating INT         DEFAULT NULL,
+    endorsement_status VARCHAR(20) NOT NULL DEFAULT 'pending',
+    endorsed_at      TIMESTAMP     DEFAULT NULL,
     submitted_at     TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (submission_id),
     FOREIGN KEY (application_id) REFERENCES applications(application_id) ON DELETE CASCADE

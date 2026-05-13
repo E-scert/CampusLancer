@@ -27,6 +27,11 @@ router.get(
 router.post("/task/delete/:task_id", isBusiness, businessController.deleteTask);
 
 // ── Feedback ───────────────────────────────────────────────
+router.get(
+  "/submission/:submission_id/review",
+  isBusiness,
+  businessController.getReviewSubmission,
+);
 router.post("/feedback", isBusiness, businessController.postFeedback);
 
 // ── Profile ────────────────────────────────────────────────

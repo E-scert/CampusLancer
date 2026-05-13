@@ -62,7 +62,8 @@ exports.getDashboard = async (req, res) => {
     );
 
     const [submissions] = await db.query(
-      `SELECT s.submission_id, s.submission_url, s.notes, s.feedback, s.submitted_at,
+      `SELECT s.submission_id, s.submission_url, s.notes, s.feedback, s.endorsement_rating,
+          s.endorsement_status, s.endorsed_at, s.submitted_at,
           t.title AS task_title, bp.company_name
    FROM submissions s
    JOIN applications a ON s.application_id = a.application_id
@@ -576,8 +577,14 @@ exports.exportSummaryPDF = async (req, res) => {
     });
 
     // Generate PDF
+    const baseUrl = `${req.protocol}://${req.get("host")}`;
+    const absoluteHtmlContent = String(htmlContent).replace(
+      /(href|src)=["']\//g,
+      `$1="${baseUrl}/`,
+    );
+
     const options = { format: "A4" };
-    const file = { content: String(htmlContent) };
+    const file = { content: absoluteHtmlContent };
     const pdfBuffer = await pdf.generatePdf(file, options);
 
     res.setHeader("Content-Type", "application/pdf");

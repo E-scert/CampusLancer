@@ -1,68 +1,69 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>Industry Summary Report</title>
-    <style>
-      body { font-family: Arial, sans-serif; background:#f0f4f8; margin:0; padding:20px; color:#333; }
-      h2 { color:#1e3a8a; text-align:center; margin-bottom:30px; }
-      .report-container { max-width:800px; margin:0 auto; background:#fff; border-radius:10px; box-shadow:0 4px 8px rgba(0,0,0,0.1); padding:25px; }
-      table { width:100%; border-collapse:collapse; }
-      th, td { padding:12px; text-align:left; border-bottom:1px solid #e5e7eb; }
-      th { background:#1e40af; color:#fff; }
-      tr:hover { background:#f9fafb; }
-      .back-link { display:inline-block; margin:1rem auto; text-decoration:none; color:#2563eb; font-weight:600; }
-      .back-link:hover { text-decoration:underline; }
-      .filter-form {
-        max-width:800px;
-        margin:0 auto 20px auto;
-        background:#fff;
-        padding:15px;
-        border-radius:8px;
-        box-shadow:0 2px 4px rgba(0,0,0,0.1);
-      }
-      .filter-form label { margin-right:10px; font-weight:600; }
-      .filter-form input { margin-right:15px; padding:5px; }
-      .filter-form button {
-        background:#2563eb; color:#fff; border:none;
-        padding:6px 12px; border-radius:4px; cursor:pointer;
-      }
-    </style>
-  </head>
-  <body>
-    <%- include('partials/adminNav') %>
-    <h2>Industry Summary Report</h2>
-    <a href="/admin/dashboard" class="back-link">← Back to Dashboard</a>
+<%- include('partials/header', { user: user, title: 'Industry Summary Report' }) %>
 
-    <!-- Filter Form -->
-    <form method="get" action="/admin/reports/industry-summary" class="filter-form">
-      <label for="startDate">Start Date:</label>
-      <input type="date" id="startDate" name="startDate" value="<%= startDate || '' %>">
-
-      <label for="endDate">End Date:</label>
-      <input type="date" id="endDate" name="endDate" value="<%= endDate || '' %>">
-
-      <button type="submit">Apply Filter</button>
-    </form>
-
-    <div class="report-container">
-      <table>
-        <thead>
-          <tr>
-            <th>Industry</th>
-            <th>Total Businesses</th>
-            <th>Total Tasks</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% data.forEach(row => { %>
-            <tr>
-              <td><%= row.industry %></td>
-              <td><%= row.total_businesses %></td>
-              <td><%= row.total_tasks %></td>
-            </tr>
-          <% }) %>
-        </tbody>
-      </table>
+<div class="page-hero">
+  <div class="page-hero-inner" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem">
+    <div>
+      <h1 style="font-size:1.6rem;margin-bottom:0.2rem">Industry Summary Report</h1>
+      <p style="color:var(--gray-600)">Activity grouped by industry, showing business and task counts.</p>
     </div>
-  </body>
-</html>
+    <a href="/admin/dashboard" class="btn btn-outline btn-sm">← Back to Dashboard</a>
+  </div>
+</div>
+
+<div class="page">
+  <!-- Filter Form -->
+  <div class="card fade-up" style="margin-bottom:2rem">
+    <form method="get" action="/admin/reports/industry-summary" style="display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-end">
+      <div>
+        <label class="form-label" for="startDate">Start Date</label>
+        <input type="date" id="startDate" name="startDate" value="<%= startDate || '' %>" class="form-input" style="width:auto">
+      </div>
+      <div>
+        <label class="form-label" for="endDate">End Date</label>
+        <input type="date" id="endDate" name="endDate" value="<%= endDate || '' %>" class="form-input" style="width:auto">
+      </div>
+      <button type="submit" class="btn btn-primary">Apply Filter</button>
+    </form>
+    <p style="font-size:0.875rem;color:var(--gray-600);margin-top:0.5rem">
+      <% if (startDate && endDate) { %>
+        Showing data from <%= startDate %> to <%= endDate %>
+      <% } else { %>
+        Showing all time data
+      <% } %>
+    </p>
+  </div>
+
+  <!-- Table -->
+  <div class="card fade-up-2">
+    <% if (data.length === 0) { %>
+      <div class="empty">
+        <div class="empty-icon">📊</div>
+        <h3>No data available</h3>
+        <p>No industry activity found for the selected period.</p>
+      </div>
+    <% } else { %>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Industry</th>
+              <th>Total Businesses</th>
+              <th>Total Tasks</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% data.forEach(row => { %>
+              <tr>
+                <td><strong><%= row.industry %></strong></td>
+                <td><%= row.total_businesses %></td>
+                <td><%= row.total_tasks %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

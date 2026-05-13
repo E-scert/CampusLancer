@@ -9,8 +9,23 @@ const path = require("path");
 const pdf = require("html-pdf-node");
 
 // Admin dashboard
-exports.dashboard = (req, res) => {
-  res.render("admin_dashboard", { user: req.session.user });
+exports.dashboard = async (req, res) => {
+  try {
+    const [rows] = await db.query(`
+      SELECT 
+        (SELECT COUNT(*) FROM business_profiles) AS total_businesses,
+        (SELECT COUNT(*) FROM student_profiles) AS total_students,
+        (SELECT COUNT(*) FROM tasks) AS total_tasks,
+        (SELECT COUNT(*) FROM applications) AS total_applications,
+        (SELECT COUNT(*) FROM applications WHERE status = 'accepted') AS accepted_applications,
+        (SELECT COUNT(*) FROM applications WHERE status = 'rejected') AS rejected_applications,
+        (SELECT COUNT(*) FROM submissions) AS total_submissions
+    `);
+    res.render("admin_dashboard", { user: req.session.user, stats: rows[0] });
+  } catch (err) {
+    console.error(err);
+    res.send("Error loading dashboard.");
+  }
 };
 
 // Management summary report with date filters
@@ -37,12 +52,15 @@ exports.managementSummary = async (req, res) => {
         (SELECT COUNT(*) FROM tasks WHERE status = 'in_progress' AND posted_at BETWEEN $1 AND $2) AS in_progress_tasks,
         (SELECT COUNT(*) FROM tasks WHERE status = 'closed' AND posted_at BETWEEN $1 AND $2) AS closed_tasks,
         (SELECT COUNT(*) FROM applications WHERE applied_at BETWEEN $1 AND $2) AS total_applications,
+        (SELECT COUNT(*) FROM applications WHERE status = 'accepted' AND applied_at BETWEEN $1 AND $2) AS accepted_applications,
+        (SELECT COUNT(*) FROM applications WHERE status = 'rejected' AND applied_at BETWEEN $1 AND $2) AS rejected_applications,
         (SELECT COUNT(*) FROM submissions WHERE submitted_at BETWEEN $1 AND $2) AS total_submissions
       `,
       [startDate, endDate],
     );
 
     res.render("managementSummary", {
+      user: req.session.user,
       data: rows[0],
       startDate,
       endDate,
@@ -71,7 +89,10 @@ exports.studentSummary = async (req, res) => {
       `
       SELECT 
         (SELECT COUNT(*) FROM student_profiles) AS total_students,
+        (SELECT COUNT(DISTINCT student_id) FROM applications WHERE applied_at BETWEEN $1 AND $2) AS active_students,
         (SELECT COUNT(*) FROM applications WHERE applied_at BETWEEN $1 AND $2) AS total_applications,
+        (SELECT COUNT(*) FROM applications WHERE status = 'accepted' AND applied_at BETWEEN $1 AND $2) AS accepted_applications,
+        (SELECT COUNT(*) FROM applications WHERE status = 'rejected' AND applied_at BETWEEN $1 AND $2) AS rejected_applications,
         (SELECT COUNT(*) FROM submissions WHERE submitted_at BETWEEN $1 AND $2) AS total_submissions
       `,
       [startDate, endDate],
@@ -153,6 +174,7 @@ exports.taskStatus = async (req, res) => {
     );
 
     res.render("taskStatus", {
+      user: req.session.user,
       data: rows[0],
       startDate,
       endDate,
@@ -186,7 +208,7 @@ exports.industrySummary = async (req, res) => {
         COUNT(t.task_id) AS total_tasks
       FROM business_profiles bp
       LEFT JOIN tasks t 
-        ON bp.user_id = t.business_id 
+        ON bp.profile_id = t.business_id 
        AND t.posted_at BETWEEN $1 AND $2
       GROUP BY bp.industry
       ORDER BY bp.industry;
@@ -195,6 +217,7 @@ exports.industrySummary = async (req, res) => {
     );
 
     res.render("industrySummary", {
+      user: req.session.user,
       data: rows,
       startDate,
       endDate,
@@ -226,6 +249,8 @@ exports.combinedSummary = async (req, res) => {
         (SELECT COUNT(*) FROM student_profiles) AS total_students,
         (SELECT COUNT(*) FROM tasks WHERE posted_at BETWEEN $1 AND $2) AS total_tasks,
         (SELECT COUNT(*) FROM applications WHERE applied_at BETWEEN $1 AND $2) AS total_applications,
+        (SELECT COUNT(*) FROM applications WHERE status = 'accepted' AND applied_at BETWEEN $1 AND $2) AS accepted_applications,
+        (SELECT COUNT(*) FROM applications WHERE status = 'rejected' AND applied_at BETWEEN $1 AND $2) AS rejected_applications,
         (SELECT COUNT(*) FROM submissions WHERE submitted_at BETWEEN $1 AND $2) AS total_submissions
       `,
       [startDate, endDate],
@@ -236,6 +261,8 @@ exports.combinedSummary = async (req, res) => {
       SELECT 
         (SELECT COUNT(*) FROM student_profiles) AS total_students,
         (SELECT COUNT(*) FROM applications WHERE applied_at BETWEEN $1 AND $2) AS total_applications,
+        (SELECT COUNT(*) FROM applications WHERE status = 'accepted' AND applied_at BETWEEN $1 AND $2) AS accepted_applications,
+        (SELECT COUNT(*) FROM applications WHERE status = 'rejected' AND applied_at BETWEEN $1 AND $2) AS rejected_applications,
         (SELECT COUNT(*) FROM submissions WHERE submitted_at BETWEEN $1 AND $2) AS total_submissions
       `,
       [startDate, endDate],
@@ -270,6 +297,7 @@ exports.combinedSummary = async (req, res) => {
     );
 
     res.render("combinedSummary", {
+      user: req.session.user,
       management: management[0],
       student: student[0],
       tasks: tasks[0],
@@ -302,6 +330,8 @@ exports.exportReportsPDF = async (req, res) => {
         (SELECT COUNT(*) FROM student_profiles) AS total_students,
         (SELECT COUNT(*) FROM tasks WHERE posted_at BETWEEN $1 AND $2) AS total_tasks,
         (SELECT COUNT(*) FROM applications WHERE applied_at BETWEEN $1 AND $2) AS total_applications,
+        (SELECT COUNT(*) FROM applications WHERE status = 'accepted' AND applied_at BETWEEN $1 AND $2) AS accepted_applications,
+        (SELECT COUNT(*) FROM applications WHERE status = 'rejected' AND applied_at BETWEEN $1 AND $2) AS rejected_applications,
         (SELECT COUNT(*) FROM submissions WHERE submitted_at BETWEEN $1 AND $2) AS total_submissions
       `,
       [startDate, endDate],
@@ -312,6 +342,8 @@ exports.exportReportsPDF = async (req, res) => {
       SELECT 
         (SELECT COUNT(*) FROM student_profiles) AS total_students,
         (SELECT COUNT(*) FROM applications WHERE applied_at BETWEEN $1 AND $2) AS total_applications,
+        (SELECT COUNT(*) FROM applications WHERE status = 'accepted' AND applied_at BETWEEN $1 AND $2) AS accepted_applications,
+        (SELECT COUNT(*) FROM applications WHERE status = 'rejected' AND applied_at BETWEEN $1 AND $2) AS rejected_applications,
         (SELECT COUNT(*) FROM submissions WHERE submitted_at BETWEEN $1 AND $2) AS total_submissions
       `,
       [startDate, endDate],
@@ -337,7 +369,7 @@ exports.exportReportsPDF = async (req, res) => {
         COUNT(t.task_id) AS total_tasks
       FROM business_profiles bp
       LEFT JOIN tasks t 
-        ON bp.user_id = t.business_id 
+        ON bp.profile_id = t.business_id 
        AND t.posted_at BETWEEN $1 AND $2
       GROUP BY bp.industry
       ORDER BY bp.industry;
@@ -348,6 +380,7 @@ exports.exportReportsPDF = async (req, res) => {
     // Render template with actual data
     const templatePath = path.join(__dirname, "../views/combinedSummary.ejs");
     const htmlContent = await ejs.renderFile(templatePath, {
+      user: req.session.user,
       management: managementRows[0],
       student: studentRows[0],
       tasks: taskRows[0],
@@ -356,9 +389,15 @@ exports.exportReportsPDF = async (req, res) => {
       endDate,
     });
 
+    const baseUrl = `${req.protocol}://${req.get("host")}`;
+    const absoluteHtmlContent = String(htmlContent).replace(
+      /(href|src)=["']\//g,
+      `$1="${baseUrl}/`,
+    );
+
     const pdf = require("html-pdf-node");
     const options = { format: "A4" };
-    const file = { content: htmlContent };
+    const file = { content: absoluteHtmlContent };
     const pdfBuffer = await pdf.generatePdf(file, options);
 
     res.setHeader("Content-Type", "application/pdf");

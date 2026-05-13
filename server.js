@@ -47,8 +47,17 @@ app.use("/admin", adminRoutes);
     await db.query(
       "ALTER TABLE applications ADD COLUMN IF NOT EXISTS status_reason TEXT DEFAULT NULL",
     );
+    await db.query(
+      "ALTER TABLE submissions ADD COLUMN IF NOT EXISTS endorsement_rating INT DEFAULT NULL",
+    );
+    await db.query(
+      "ALTER TABLE submissions ADD COLUMN IF NOT EXISTS endorsement_status VARCHAR(20) NOT NULL DEFAULT 'pending'",
+    );
+    await db.query(
+      "ALTER TABLE submissions ADD COLUMN IF NOT EXISTS endorsed_at TIMESTAMP DEFAULT NULL",
+    );
     console.log(
-      "DB migration complete: max_applicants and status_reason columns ensured.",
+      "DB migration complete: max_applicants, status_reason, and endorsement columns ensured.",
     );
   } catch (err) {
     console.error("DB migration error:", err.message);

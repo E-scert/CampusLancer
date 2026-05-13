@@ -1,175 +1,115 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>Business Summary Report</title>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        background-color: #fff;
-        color: #333;
-        margin: 0;
-        padding: 20px;
-      }
-      h2 {
-        color: #1e3a8a;
-        text-align: center;
-        margin-bottom: 20px;
-      }
-      .actions {
-        display: flex;
-        justify-content: center;
-        gap: 1rem;
-        margin-bottom: 1rem;
-      }
-      .btn {
-        padding: 0.4rem 0.8rem;
-        border-radius: 4px;
-        text-decoration: none;
-        font-size: 0.9rem;
-      }
-      .btn-primary {
-        background-color: #2563eb;
-        color: #fff;
-      }
-      .btn-outline {
-        border: 1px solid #2563eb;
-        color: #2563eb;
-      }
-      .filter-form {
-        max-width: 800px;
-        margin: 0 auto 20px auto;
-        display: flex;
-        justify-content: center;
-        gap: 15px;
-        background: #f9fafb;
-        padding: 15px;
-        border-radius: 8px;
-        border: 1px solid #e5e7eb;
-      }
-      .filter-form label {
-        font-weight: 600;
-        color: #1e40af;
-      }
-      .filter-form input {
-        padding: 5px;
-        border: 1px solid #cbd5e1;
-        border-radius: 4px;
-      }
-      .report-container {
-        max-width: 800px;
-        margin: 0 auto;
-        border: 1px solid #e5e7eb;
-        border-radius: 8px;
-        padding: 20px;
-      }
-      .report-item {
-        display: flex;
-        justify-content: space-between;
-        padding: 8px 0;
-        border-bottom: 1px solid #e5e7eb;
-      }
-      .report-item:last-child {
-        border-bottom: none;
-      }
-      .label {
-        font-weight: bold;
-        color: #1e40af;
-      }
-      .value {
-        font-weight: bold;
-        color: #2563eb;
-      }
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 20px;
-      }
-      th, td {
-        border: 1px solid #e5e7eb;
-        padding: 8px;
-        text-align: left;
-      }
-      th {
-        background-color: #f3f4f6;
-        color: #1e3a8a;
-      }
-      .footer {
-        margin-top: 20px;
-        text-align: center;
-        font-size: 0.85rem;
-        color: #666;
-      }
-    </style>
-  </head>
-  <body>
-    <h2>Business Summary Report</h2>
+<%- include('partials/header', { user: user, title: 'Business Summary Report' }) %>
 
-    <!-- Action buttons -->
-    <div class="actions">
-      <a href="/business/dashboard" class="btn btn-outline">← Back to Dashboard</a>
-      <a href="/business/reports/export-pdf?startDate=<%= startDate %>&endDate=<%= endDate %>" class="btn btn-primary">
-        ⬇ Download PDF Report
+<div class="page-hero">
+  <div class="page-hero-inner" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem">
+    <div>
+      <h1 style="font-size:1.6rem;margin-bottom:0.2rem">Business Summary Report</h1>
+      <p style="color:var(--gray-600)">Your company's activity, tasks, applicants, and submissions.</p>
+    </div>
+    <div style="display:flex;gap:0.75rem">
+      <a href="/business/dashboard" class="btn btn-outline btn-sm">← Back to Dashboard</a>
+      <a href="/business/reports/export-pdf?startDate=<%= startDate %>&endDate=<%= endDate %>" class="btn btn-primary btn-sm">
+        ⬇ Download PDF
       </a>
     </div>
+  </div>
+</div>
 
-    <!-- Filter Form -->
-    <form method="get" action="/business/reports/summary" class="filter-form">
-      <label for="startDate">Start Date:</label>
-      <input type="date" id="startDate" name="startDate" value="<%= startDate || '' %>">
-
-      <label for="endDate">End Date:</label>
-      <input type="date" id="endDate" name="endDate" value="<%= endDate || '' %>">
-
+<div class="page">
+  <!-- Filter Form -->
+  <div class="card fade-up" style="margin-bottom:2rem">
+    <form method="get" action="/business/reports/summary" style="display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-end">
+      <div>
+        <label class="form-label" for="startDate">Start Date</label>
+        <input type="date" id="startDate" name="startDate" value="<%= startDate || '' %>" class="form-input" style="width:auto">
+      </div>
+      <div>
+        <label class="form-label" for="endDate">End Date</label>
+        <input type="date" id="endDate" name="endDate" value="<%= endDate || '' %>" class="form-input" style="width:auto">
+      </div>
       <button type="submit" class="btn btn-primary">Apply Filter</button>
     </form>
+    <p style="font-size:0.875rem;color:var(--gray-600);margin-top:0.5rem">
+      <% if (startDate && endDate) { %>
+        Showing data from <%= startDate %> to <%= endDate %>
+      <% } else { %>
+        Showing all time data
+      <% } %>
+    </p>
+  </div>
 
-    <div class="report-container">
-      <div class="report-item">
-        <span class="label">Company:</span>
-        <span class="value"><%= profile.company_name %></span>
+  <!-- Company Info -->
+  <div class="card fade-up-2" style="margin-bottom:2rem">
+    <div class="grid-2">
+      <div>
+        <div class="stat-label">Company</div>
+        <div class="stat-value"><%= profile.company_name %></div>
       </div>
-      <div class="report-item">
-        <span class="label">Industry:</span>
-        <span class="value"><%= profile.industry %></span>
+      <div>
+        <div class="stat-label">Industry</div>
+        <div class="stat-value"><%= profile.industry %></div>
       </div>
-      <div class="report-item">
-        <span class="label">Email:</span>
-        <span class="value"><%= profile.company_email %></span>
+      <div>
+        <div class="stat-label">Email</div>
+        <div class="stat-value"><%= profile.company_email %></div>
       </div>
-      <div class="report-item">
-        <span class="label">Total Tasks Posted:</span>
-        <span class="value"><%= tasksCount.total_tasks %></span>
+      <div>
+        <div class="stat-label">Total Tasks Posted</div>
+        <div class="stat-value"><%= tasksCount.total_tasks %></div>
       </div>
-      <div class="report-item">
-        <span class="label">Total Applicants:</span>
-        <span class="value"><%= applicantsCount.total_applicants %></span>
+      <div>
+        <div class="stat-label">Total Applicants</div>
+        <div class="stat-value"><%= applicantsCount.total_applicants %></div>
       </div>
-      <div class="report-item">
-        <span class="label">Total Submissions:</span>
-        <span class="value"><%= submissionsCount.total_submissions %></span>
+      <div>
+        <div class="stat-label">Accepted Applicants</div>
+        <div class="stat-value"><%= applicantsCount.accepted_applicants %></div>
+      </div>
+      <div>
+        <div class="stat-label">Rejected Applicants</div>
+        <div class="stat-value"><%= applicantsCount.rejected_applicants %></div>
+      </div>
+      <div>
+        <div class="stat-label">Total Submissions</div>
+        <div class="stat-value"><%= submissionsCount.total_submissions %></div>
       </div>
     </div>
+  </div>
 
-    <h3>Recent Tasks</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>Title</th>
-          <th>Posted At</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% recentTasks.forEach(task => { %>
-          <tr>
-            <td><%= task.title %></td>
-            <td><%= new Date(task.posted_at).toLocaleString() %></td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
+  <!-- Recent Tasks -->
+  <div class="card fade-up-3">
+    <h3 style="margin-bottom:1rem">Recent Tasks</h3>
+    <% if (recentTasks.length === 0) { %>
+      <div class="empty">
+        <div class="empty-icon">📌</div>
+        <h3>No tasks yet</h3>
+        <p>Your posted tasks will appear here.</p>
+      </div>
+    <% } else { %>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Posted At</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% recentTasks.forEach(task => { %>
+              <tr>
+                <td><strong><%= task.title %></strong></td>
+                <td><%= new Date(task.posted_at).toLocaleString() %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
 
-    <div class="footer">
-      Report generated on <%= generatedAt %> (Date range: <%= startDate %> to <%= endDate %>)
-    </div>
-  </body>
-</html>
+  <div class="footer" style="margin-top:2rem;text-align:center;font-size:0.85rem;color:var(--gray-500)">
+    Report generated on <%= generatedAt %> (Date range: <%= startDate %> to <%= endDate %>)
+  </div>
+</div>
+
+<%- include('partials/footer') %>

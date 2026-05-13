@@ -71,7 +71,8 @@ exports.getDashboard = async (req, res) => {
 
     // Submissions
     const [submissions] = await db.query(
-      `SELECT s.submission_id, s.submission_url, s.notes, s.feedback, s.submitted_at,
+      `SELECT s.submission_id, s.submission_url, s.notes, s.feedback, s.endorsement_rating,
+              s.endorsement_status, s.endorsed_at, s.submitted_at,
               sp.first_name, sp.last_name, sp.institution,
               t.title AS task_title
        FROM submissions s
@@ -210,13 +211,65 @@ exports.deleteTask = async (req, res) => {
   }
 };
 
-// Save feedback on a submission
+exports.getReviewSubmission = async (req, res) => {
+  const { submission_id } = req.params;
+  const user_id = req.session.user?.user_id;
+  try {
+    const [rows] = await db.query(
+      `SELECT s.submission_id, s.submission_url, s.notes, s.feedback,
+              s.endorsement_rating, s.endorsement_status, s.endorsed_at,
+              a.application_id, a.student_id,
+              t.title AS task_title, bp.company_name,
+              sp.first_name, sp.last_name, sp.institution
+       FROM submissions s
+       JOIN applications a ON s.application_id = a.application_id
+       JOIN tasks t ON a.task_id = t.task_id
+       JOIN business_profiles bp ON t.business_id = bp.profile_id
+       JOIN student_profiles sp ON a.student_id = sp.profile_id
+       WHERE s.submission_id = $1 AND t.business_id = (
+         SELECT profile_id FROM business_profiles WHERE user_id = $2
+       )`,
+      [submission_id, user_id],
+    );
+    if (!rows.length) {
+      return res.status(404).send("Submission not found.");
+    }
+    res.render("review_submission", {
+      user: req.session.user,
+      submission: rows[0],
+    });
+  } catch (err) {
+    console.error(err);
+    res.send("Error loading submission review page.");
+  }
+};
+
+// Save feedback and endorsement on a submission
 exports.postFeedback = async (req, res) => {
-  const { submission_id, feedback } = req.body;
+  const { submission_id, feedback, endorsement_rating, endorsement_status } =
+    req.body;
+  const ratingValue = endorsement_rating ? Number(endorsement_rating) : null;
+  const statusValue = endorsement_status || "pending";
   try {
     await db.query(
-      "UPDATE submissions SET feedback = $1 WHERE submission_id = $2",
-      [feedback, submission_id],
+      `UPDATE submissions s
+       SET feedback = $1,
+           endorsement_rating = $2,
+           endorsement_status = $3,
+           endorsed_at = NOW()
+       FROM applications a
+       JOIN tasks t ON a.task_id = t.task_id
+       JOIN business_profiles bp ON t.business_id = bp.profile_id
+       WHERE s.application_id = a.application_id
+         AND s.submission_id = $4
+         AND bp.user_id = $5`,
+      [
+        feedback || null,
+        ratingValue,
+        statusValue,
+        submission_id,
+        req.session.user.user_id,
+      ],
     );
     res.redirect("/business/dashboard");
   } catch (err) {
@@ -344,10 +397,13 @@ exports.getSummaryReport = async (req, res) => {
 
     // Applicants
     const [applicantsCount] = await db.query(
-      `SELECT COUNT(*) AS total_applicants
+      `SELECT
+         COUNT(*) AS total_applicants,
+         COUNT(*) FILTER (WHERE a.status = 'accepted') AS accepted_applicants,
+         COUNT(*) FILTER (WHERE a.status = 'rejected') AS rejected_applicants
        FROM applications a
        JOIN tasks t ON a.task_id = t.task_id
-       WHERE t.business_id = $1 AND a.status = 'accepted' AND a.applied_at BETWEEN $2 AND $3`,
+       WHERE t.business_id = $1 AND a.applied_at BETWEEN $2 AND $3`,
       [profile.profile_id, startDate, endDate],
     );
 
@@ -416,10 +472,13 @@ exports.exportSummaryPDF = async (req, res) => {
 
     // Applicants count
     const [applicantsCount] = await db.query(
-      `SELECT COUNT(*) AS total_applicants
+      `SELECT
+         COUNT(*) AS total_applicants,
+         COUNT(*) FILTER (WHERE a.status = 'accepted') AS accepted_applicants,
+         COUNT(*) FILTER (WHERE a.status = 'rejected') AS rejected_applicants
        FROM applications a
        JOIN tasks t ON a.task_id = t.task_id
-       WHERE t.business_id = $1 AND a.status = 'accepted' AND a.applied_at BETWEEN $2 AND $3`,
+       WHERE t.business_id = $1 AND a.applied_at BETWEEN $2 AND $3`,
       [profile.profile_id, startDate, endDate],
     );
 
@@ -458,8 +517,14 @@ exports.exportSummaryPDF = async (req, res) => {
       isPdf: true,
     });
 
+    const baseUrl = `${req.protocol}://${req.get("host")}`;
+    const absoluteHtmlContent = String(htmlContent).replace(
+      /(href|src)=["']\//g,
+      `$1="${baseUrl}/`,
+    );
+
     // Generate PDF
-    const file = { content: String(htmlContent) };
+    const file = { content: absoluteHtmlContent };
     const pdfBuffer = await pdf.generatePdf(file, { format: "A4" });
 
     res.setHeader("Content-Type", "application/pdf");

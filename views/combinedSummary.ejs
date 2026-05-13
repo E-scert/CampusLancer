@@ -1,94 +1,150 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>CampusLancer Combined Summary Report</title>
-    <style>
-      body { font-family: Arial, sans-serif; background:#fff; color:#333; padding:20px; }
-      h1 { text-align:center; color:#1e3a8a; margin-bottom:40px; }
-      h2 { color:#1e40af; margin-top:40px; margin-bottom:20px; }
-      .section { margin-bottom:60px; page-break-after:always; }
-      table { width:100%; border-collapse:collapse; margin-top:15px; }
-      th, td { padding:10px; border:1px solid #ddd; text-align:left; }
-      th { background:#1e40af; color:#fff; }
-      tr:nth-child(even) { background:#f9fafb; }
+<%- include('partials/header', { user: user, title: 'Combined Summary Report' }) %>
 
-      /* Footer styling */
-      .footer {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        font-size: 12px;
-        color: #666;
-        text-align: center;
-        border-top: 1px solid #ddd;
-        padding: 5px;
-      }
-    </style>
-  </head>
-  <body>
-    <h1>CampusLancer Summary Reports</h1>
-
-    <!-- Management Summary -->
-    <div class="section">
-      <h2>Management Summary</h2>
-      <table>
-        <tr><th>Total Businesses</th><td><%= management.total_businesses %></td></tr>
-        <tr><th>Total Students</th><td><%= management.total_students %></td></tr>
-        <tr><th>Total Tasks</th><td><%= management.total_tasks %></td></tr>
-        <tr><th>Total Applications</th><td><%= management.total_applications %></td></tr>
-        <tr><th>Total Submissions</th><td><%= management.total_submissions %></td></tr>
-      </table>
+<div class="page-hero">
+  <div class="page-hero-inner" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem">
+    <div>
+      <h1 style="font-size:1.6rem;margin-bottom:0.2rem">CampusLancer Summary Reports</h1>
+      <p style="color:var(--gray-600)">Comprehensive overview of platform activity across all categories.</p>
     </div>
-
-    <!-- Student Summary -->
-    <div class="section">
-      <h2>Student Summary</h2>
-      <table>
-        <tr><th>Total Students</th><td><%= student.total_students %></td></tr>
-        <tr><th>Total Applications</th><td><%= student.total_applications %></td></tr>
-        <tr><th>Total Submissions</th><td><%= student.total_submissions %></td></tr>
-      </table>
-    </div>
-
-    <!-- Task Status Summary -->
-    <div class="section">
-      <h2>Task Status Summary</h2>
-      <table>
-        <tr><th>Open Tasks</th><td><%= tasks.open %></td></tr>
-        <tr><th>In Progress Tasks</th><td><%= tasks.in_progress %></td></tr>
-        <tr><th>Closed Tasks</th><td><%= tasks.closed %></td></tr>
-      </table>
-    </div>
-
-    <!-- Industry Summary -->
-    <div class="section">
-      <h2>Industry Summary</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Industry</th>
-            <th>Total Businesses</th>
-            <th>Total Tasks</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% industry.forEach(row => { %>
-            <tr>
-              <td><%= row.industry %></td>
-              <td><%= row.total_businesses %></td>
-              <td><%= row.total_tasks %></td>
-            </tr>
-          <% }) %>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- Footer -->
-    <div class="footer">
-  CampusLancer Report — Generated on <%= new Date().toLocaleDateString() %>
-  (Date range: <%= startDate %> to <%= endDate %>)
+    <a href="/admin/dashboard" class="btn btn-outline btn-sm">← Back to Dashboard</a>
+  </div>
 </div>
 
-  </body>
-</html>
+<div class="page">
+  <!-- Management Summary -->
+  <div class="card fade-up" style="margin-bottom:2rem">
+    <h3 style="margin-bottom:1rem">Management Summary</h3>
+    <div class="grid-3">
+      <div class="stat-card">
+        <div class="stat-label">Total Businesses</div>
+        <div class="stat-value"><%= management.total_businesses %></div>
+        <div class="stat-sub">Registered</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Students</div>
+        <div class="stat-value"><%= management.total_students %></div>
+        <div class="stat-sub">Registered</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Tasks</div>
+        <div class="stat-value"><%= management.total_tasks %></div>
+        <div class="stat-sub">Posted</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Applications</div>
+        <div class="stat-value"><%= management.total_applications %></div>
+        <div class="stat-sub">Submitted</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Accepted Applications</div>
+        <div class="stat-value"><%= management.accepted_applications %></div>
+        <div class="stat-sub">Approved</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Rejected Applications</div>
+        <div class="stat-value"><%= management.rejected_applications %></div>
+        <div class="stat-sub">Declined</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Submissions</div>
+        <div class="stat-value"><%= management.total_submissions %></div>
+        <div class="stat-sub">Completed</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Student Summary -->
+  <div class="card fade-up-2" style="margin-bottom:2rem">
+    <h3 style="margin-bottom:1rem">Student Summary</h3>
+    <div class="grid-3">
+      <div class="stat-card">
+        <div class="stat-label">Total Students</div>
+        <div class="stat-value"><%= student.total_students %></div>
+        <div class="stat-sub">Registered</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Applications</div>
+        <div class="stat-value"><%= student.total_applications %></div>
+        <div class="stat-sub">Submitted</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Accepted Applications</div>
+        <div class="stat-value"><%= student.accepted_applications %></div>
+        <div class="stat-sub">Approved</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Rejected Applications</div>
+        <div class="stat-value"><%= student.rejected_applications %></div>
+        <div class="stat-sub">Declined</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Submissions</div>
+        <div class="stat-value"><%= student.total_submissions %></div>
+        <div class="stat-sub">Completed</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Task Status Summary -->
+  <div class="card fade-up-3" style="margin-bottom:2rem">
+    <h3 style="margin-bottom:1rem">Task Status Summary</h3>
+    <div class="grid-3">
+      <div class="stat-card">
+        <div class="stat-label">Open Tasks</div>
+        <div class="stat-value"><%= tasks.open %></div>
+        <div class="stat-sub">Accepting applications</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">In Progress Tasks</div>
+        <div class="stat-value"><%= tasks.in_progress %></div>
+        <div class="stat-sub">Active</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Closed Tasks</div>
+        <div class="stat-value"><%= tasks.closed %></div>
+        <div class="stat-sub">Completed</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Industry Summary -->
+  <div class="card fade-up-4">
+    <h3 style="margin-bottom:1rem">Industry Summary</h3>
+    <% if (industry.length === 0) { %>
+      <div class="empty">
+        <div class="empty-icon">🏭</div>
+        <h3>No industry data</h3>
+        <p>No industry activity found.</p>
+      </div>
+    <% } else { %>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Industry</th>
+              <th>Total Businesses</th>
+              <th>Total Tasks</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% industry.forEach(row => { %>
+              <tr>
+                <td><strong><%= row.industry %></strong></td>
+                <td><%= row.total_businesses %></td>
+                <td><%= row.total_tasks %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- Footer -->
+  <div style="margin-top:2rem;text-align:center;font-size:0.85rem;color:var(--gray-500)">
+    CampusLancer Report — Generated on <%= new Date().toLocaleDateString() %>
+    (Date range: <%= startDate %> to <%= endDate %>)
+  </div>
+</div>
+
+<%- include('partials/footer') %>

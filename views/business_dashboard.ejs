@@ -202,14 +202,30 @@
                 <td><%= s.task_title %></td>
                 <td><%= s.first_name %> <%= s.last_name %> (<%= s.institution %>)</td>
                 <td><%= s.submitted_at %></td>
-                <td><a href="<%= s.submission_url %>" target="_blank">View</a></td>
+                <td>
+                  <a href="<%= s.submission_url %>" target="_blank" class="btn btn-outline btn-sm" style="color:var(--blue-700);border-color:var(--blue-200);">
+                    View Work
+                  </a>
+                </td>
                 <td><%= s.notes || '-' %></td>
                 <td>
-                  <form method="POST" action="/business/feedback" style="display:flex;flex-direction:column;gap:0.5rem">
-                    <input type="hidden" name="submission_id" value="<%= s.submission_id %>">
-                    <textarea name="feedback" rows="2" style="width:100%"><%= s.feedback || "" %></textarea>
-                    <button type="submit" class="btn btn-primary btn-sm">Save Feedback</button>
-                  </form>
+                  <div style="display:flex;flex-direction:column;gap:0.5rem;">
+                    <div>
+                      <% if (s.endorsement_status === 'approved') { %>
+                        <span class="badge badge-green">Approved</span>
+                      <% } else if (s.endorsement_status === 'needs_revision') { %>
+                        <span class="badge badge-amber">Needs revision</span>
+                      <% } else if (s.endorsement_status === 'rejected') { %>
+                        <span class="badge badge-red">Rejected</span>
+                      <% } else { %>
+                        <span class="badge badge-gray">Pending review</span>
+                      <% } %>
+                      <% if (s.endorsement_rating) { %>
+                        <strong style="margin-left:0.5rem;"><%= s.endorsement_rating %>★</strong>
+                      <% } %>
+                    </div>
+                    <a href="/business/submission/<%= s.submission_id %>/review" class="btn btn-primary btn-sm">Review</a>
+                  </div>
                 </td>
               </tr>
             <% }) %>
