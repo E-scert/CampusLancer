@@ -198,9 +198,6 @@ CREATE DATABASE campus_lancer_db;
 psql -U your_username -d campus_lancer_db -f campus_lancer_postgres.sql
 ```
 
-### 4. Set up environment variables
-
-See [Environment variables](#environment-variables) below.
 
 ### 5. Run the app
 
@@ -216,29 +213,7 @@ The app runs at `http://localhost:3000`.
 
 ---
 
-## Environment variables
 
-Create a `.env` file in the root directory:
-
-```env
-# Database
-DATABASE_URL=postgresql://username:password@localhost:5432/campus_lancer_db
-
-# Session
-SESSION_SECRET=your_secret_key_here
-
-# Email (Nodemailer)
-EMAIL_USER=your_email@gmail.com
-EMAIL_PASS=your_email_app_password
-
-# Server
-PORT=3000
-NODE_ENV=development
-```
-
-> Never commit your `.env` file. It is already listed in `.gitignore`.
-
----
 
 ## Authors
 
