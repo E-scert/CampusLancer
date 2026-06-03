@@ -163,6 +163,7 @@
               <div style="display:flex;gap:0.4rem;flex-wrap:wrap">
                 <span class="badge badge-blue"><%= task.required_skill %></span>
                 <span class="badge badge-gray">Score <%= task.min_skill_score %></span>
+                <span class="badge badge-green"><%= task.fit_score %>% match</span>
                 <span class="badge badge-gray"><%= task.task_type %></span>
                 <% if (task.max_applicants != null) { %>
                   <span class="badge badge-green"><%= task.slots_remaining %> / <%= task.max_applicants %> slots</span>
@@ -221,8 +222,12 @@
                 <% } else { %>
                   <span class="badge badge-amber">Pending</span>
                 <% } %>
-                <% if (app.status === 'rejected' && app.status_reason) { %>
-                  <div style="margin-top:0.35rem;font-size:0.78rem;color:var(--gray-500)">Reason: <%= app.status_reason %></div>
+                <% if (app.status === 'rejected') { %>
+                  <% if (app.rejection_feedback) { %>
+                    <div style="margin-top:0.35rem;font-size:0.78rem;color:var(--gray-500)">Feedback: <%= app.rejection_feedback %></div>
+                  <% } else if (app.status_reason) { %>
+                    <div style="margin-top:0.35rem;font-size:0.78rem;color:var(--gray-500)">Reason: <%= app.status_reason %></div>
+                  <% } %>
                 <% } %>
               </td>
               <td>

@@ -1,6 +1,7 @@
 const db = require("../config/db");
 const scanGitHub = require("../config/githubScanner");
 const { decideApplicationStatus } = require("../config/autoApplicationDecider");
+const aiService = require("../config/aiService");
 const path = require("path");
 const ejs = require("ejs");
 const pdf = require("html-pdf-node");
@@ -57,9 +58,39 @@ exports.getDashboard = async (req, res) => {
          )
          AND (t.max_applicants IS NULL OR COALESCE(accepted_counts.total_accepted, 0) < t.max_applicants)
        ORDER BY t.posted_at ASC
-       LIMIT 4`,
+       LIMIT 6`,
       [profile.ai_skill_score, profile.profile_id],
     );
+
+    // Compute a simple fit score for each recommended task based on overlap
+    // between task.required_skill and student's top languages.
+    let studentLangNames = [];
+    try {
+      studentLangNames = profile.top_languages
+        ? JSON.parse(profile.top_languages).map((l) =>
+            String(l.name).toLowerCase(),
+          )
+        : [];
+    } catch (e) {
+      studentLangNames = [];
+    }
+
+    const recommendedWithFit = recommended.map((t) => {
+      const req = t.required_skill
+        ? t.required_skill
+            .split(",")
+            .map((s) => s.trim().toLowerCase())
+            .filter(Boolean)
+        : [];
+      const matchCount = req.filter((r) => studentLangNames.includes(r)).length;
+      const fit = req.length ? Math.round((matchCount / req.length) * 100) : 0;
+      return {
+        ...t,
+        fit_score: fit,
+        fit_match: matchCount,
+        fit_required: req.length,
+      };
+    });
 
     const [submissions] = await db.query(
       `SELECT s.submission_id, s.submission_url, s.notes, s.feedback, s.endorsement_rating,
@@ -78,7 +109,7 @@ exports.getDashboard = async (req, res) => {
       user: req.session.user,
       profile,
       applications,
-      recommended,
+      recommended: recommendedWithFit,
       languages,
       suggestions,
       submissions,
@@ -179,7 +210,7 @@ exports.postApply = async (req, res) => {
   const user_id = req.session.user.user_id;
   try {
     const [pRows] = await db.query(
-      "SELECT profile_id, github_username FROM student_profiles WHERE user_id = $1",
+      "SELECT profile_id, github_username, top_languages, first_name, last_name FROM student_profiles WHERE user_id = $1",
       [user_id],
     );
     const studentProfile = pRows[0];
@@ -223,6 +254,18 @@ exports.postApply = async (req, res) => {
       ? requiredSkillString.split(",").map((s) => s.trim())
       : [];
 
+    // Parse student's top languages for skill matching
+    let studentLangNames = [];
+    try {
+      studentLangNames = studentProfile.top_languages
+        ? JSON.parse(studentProfile.top_languages).map((l) =>
+            String(l.name).toLowerCase(),
+          )
+        : [];
+    } catch (e) {
+      studentLangNames = [];
+    }
+
     // Auto-decide status before inserting the application
     let status = "rejected";
     let statusReason = null;
@@ -251,6 +294,31 @@ exports.postApply = async (req, res) => {
       [task_id, studentProfile.profile_id, status, statusReason],
     );
     const application_id = insertResult.application_id;
+
+    // If auto-rejected, generate personalized feedback and save it
+    if (status === "rejected") {
+      try {
+        const missingSkills = requiredSkills
+          .map((s) => s.toLowerCase())
+          .filter((rs) => !studentLangNames.includes(rs));
+        const feedback = await aiService.generateRejectionFeedback(
+          task,
+          studentProfile,
+          missingSkills,
+        );
+        if (feedback) {
+          await db.query(
+            "UPDATE applications SET rejection_feedback = $1 WHERE application_id = $2",
+            [feedback, application_id],
+          );
+        }
+      } catch (err) {
+        console.error(
+          "Failed to generate/save rejection feedback:",
+          err.message,
+        );
+      }
+    }
 
     if (status === "accepted" && task.max_applicants != null) {
       const [newAcceptedRows] = await db.query(
