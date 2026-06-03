@@ -64,7 +64,7 @@ exports.getDashboard = async (req, res) => {
     const [submissions] = await db.query(
       `SELECT s.submission_id, s.submission_url, s.notes, s.feedback, s.endorsement_rating,
           s.endorsement_status, s.endorsed_at, s.submitted_at,
-          t.title AS task_title, bp.company_name
+          a.application_id, t.title AS task_title, bp.company_name
    FROM submissions s
    JOIN applications a ON s.application_id = a.application_id
    JOIN tasks t ON a.task_id = t.task_id
@@ -82,6 +82,7 @@ exports.getDashboard = async (req, res) => {
       languages,
       suggestions,
       submissions,
+      submittedApplicationIds: submissions.map((s) => s.application_id),
     });
   } catch (err) {
     console.error(err);
@@ -283,13 +284,30 @@ exports.getSubmit = async (req, res) => {
   const { application_id } = req.params;
   try {
     const [rows] = await db.query(
-      `SELECT a.*, t.title FROM applications a
-             JOIN tasks t ON a.task_id = t.task_id WHERE a.application_id = $1`,
+      `SELECT a.*, t.title,
+              EXISTS(SELECT 1 FROM submissions s WHERE s.application_id = a.application_id) AS has_submission
+         FROM applications a
+         JOIN tasks t ON a.task_id = t.task_id
+        WHERE a.application_id = $1`,
       [application_id],
     );
+    const application = rows[0];
+    if (!application) {
+      return res.send("Application not found.");
+    }
+    if (application.has_submission) {
+      return res.redirect("/student/dashboard");
+    }
+    if (application.status !== "accepted") {
+      return res.render("submit", {
+        user: req.session.user,
+        application,
+        error: "Only accepted applications can be submitted.",
+      });
+    }
     res.render("submit", {
       user: req.session.user,
-      application: rows[0],
+      application,
       error: null,
     });
   } catch (err) {
@@ -301,6 +319,37 @@ exports.getSubmit = async (req, res) => {
 exports.postSubmit = async (req, res) => {
   const { application_id, submission_url, notes } = req.body;
   try {
+    const [rows] = await db.query(
+      `SELECT a.*, t.title,
+              EXISTS(SELECT 1 FROM submissions s WHERE s.application_id = a.application_id) AS has_submission
+         FROM applications a
+         JOIN tasks t ON a.task_id = t.task_id
+        WHERE a.application_id = $1`,
+      [application_id],
+    );
+    const application = rows[0];
+    if (!application) {
+      return res.render("submit", {
+        user: req.session.user,
+        application: { application_id },
+        error: "Application not found.",
+      });
+    }
+    if (application.has_submission) {
+      return res.render("submit", {
+        user: req.session.user,
+        application,
+        error: "This application already has a submission.",
+      });
+    }
+    if (application.status !== "accepted") {
+      return res.render("submit", {
+        user: req.session.user,
+        application,
+        error: "Only accepted applications can be submitted.",
+      });
+    }
+
     await db.query(
       "INSERT INTO submissions (application_id, submission_url, notes) VALUES ($1, $2, $3)",
       [application_id, submission_url, notes || null],

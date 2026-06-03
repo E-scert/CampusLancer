@@ -64,7 +64,7 @@
   <div class="grid-3 fade-up" style="margin-bottom:2.5rem">
     <div class="stat-card">
       <div class="stat-label">Applications</div>
-      <div class="stat-value"><%= applications.filter(a => a.status !== 'rejected').length %></div>
+      <div class="stat-value"><%= applications.length %></div>
       <div class="stat-sub">Tasks applied to</div>
     </div>
     <div class="stat-card">
@@ -187,6 +187,13 @@
       <a href="/tasks" class="btn btn-primary" style="margin-top:1rem">Browse Tasks</a>
     </div>
   <% } else { %>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1rem;flex-wrap:wrap">
+      <div style="font-size:0.95rem;color:var(--gray-600)">Show applications by status:</div>
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+        <button type="button" class="btn btn-outline btn-sm active" data-filter="accepted">Accepted</button>
+        <button type="button" class="btn btn-outline btn-sm" data-filter="rejected">Rejected</button>
+      </div>
+    </div>
     <div class="table-wrap">
       <table>
         <thead>
@@ -200,7 +207,7 @@
         </thead>
         <tbody>
           <% applications.forEach(app => { %>
-            <tr>
+            <tr data-status="<%= app.status %>">
               <td><strong><%= app.title %></strong></td>
               <td><%= app.company_name %></td>
               <td><span class="badge badge-blue"><%= app.required_skill %></span></td>
@@ -219,8 +226,10 @@
                 <% } %>
               </td>
               <td>
-                <% if (app.status === 'accepted') { %>
+                <% if (app.status === 'accepted' && !submittedApplicationIds.includes(app.application_id)) { %>
                   <a href="/student/submit/<%= app.application_id %>" class="btn btn-primary btn-sm">Submit Work</a>
+                <% } else if (app.status === 'accepted' && submittedApplicationIds.includes(app.application_id)) { %>
+                  <span style="font-size:0.82rem;color:var(--gray-600)">Submitted</span>
                 <% } else if (app.status === 'pending') { %>
                   <form action="/student/<%= app.application_id %>/cancel" method="POST" style="display:inline">
                     <button type="submit" class="btn btn-warning btn-sm" onclick="return confirm('Are you sure you want to cancel this application?');">Cancel</button>
@@ -236,6 +245,29 @@
     </div>
   <% } %>
 </div>
+
+<script>
+  (function() {
+    const filterButtons = document.querySelectorAll('[data-filter]');
+    const rows = document.querySelectorAll('tbody tr[data-status]');
+    const activeClass = 'active';
+
+    function setFilter(status) {
+      filterButtons.forEach(btn => {
+        btn.classList.toggle(activeClass, btn.dataset.filter === status);
+      });
+      rows.forEach(row => {
+        row.style.display = row.dataset.status === status ? '' : 'none';
+      });
+    }
+
+    filterButtons.forEach(button => {
+      button.addEventListener('click', () => setFilter(button.dataset.filter));
+    });
+
+    setFilter('accepted');
+  })();
+</script>
 
 
   <!-- My Submissions -->
