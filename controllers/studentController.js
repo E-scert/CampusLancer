@@ -1,7 +1,6 @@
 const db = require("../config/db");
 const scanGitHub = require("../config/githubScanner");
 const { decideApplicationStatus } = require("../config/autoApplicationDecider");
-const aiService = require("../config/aiService");
 const path = require("path");
 const ejs = require("ejs");
 const pdf = require("html-pdf-node");
@@ -289,36 +288,10 @@ exports.postApply = async (req, res) => {
       statusReason = "GitHub username is missing.";
     }
 
-    const [insertResult] = await db.query(
+    const [insertRows] = await db.query(
       "INSERT INTO applications (task_id, student_id, status, status_reason) VALUES ($1, $2, $3, $4) RETURNING application_id",
       [task_id, studentProfile.profile_id, status, statusReason],
     );
-    const application_id = insertResult.application_id;
-
-    // If auto-rejected, generate personalized feedback and save it
-    if (status === "rejected") {
-      try {
-        const missingSkills = requiredSkills
-          .map((s) => s.toLowerCase())
-          .filter((rs) => !studentLangNames.includes(rs));
-        const feedback = await aiService.generateRejectionFeedback(
-          task,
-          studentProfile,
-          missingSkills,
-        );
-        if (feedback) {
-          await db.query(
-            "UPDATE applications SET rejection_feedback = $1 WHERE application_id = $2",
-            [feedback, application_id],
-          );
-        }
-      } catch (err) {
-        console.error(
-          "Failed to generate/save rejection feedback:",
-          err.message,
-        );
-      }
-    }
 
     if (status === "accepted" && task.max_applicants != null) {
       const [newAcceptedRows] = await db.query(
