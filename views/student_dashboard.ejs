@@ -191,7 +191,8 @@
     <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1rem;flex-wrap:wrap">
       <div style="font-size:0.95rem;color:var(--gray-600)">Show applications by status:</div>
       <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
-        <button type="button" class="btn btn-outline btn-sm active" data-filter="accepted">Accepted</button>
+        <button type="button" class="btn btn-outline btn-sm active" data-filter="all">All</button>
+        <button type="button" class="btn btn-outline btn-sm" data-filter="accepted">Accepted</button>
         <button type="button" class="btn btn-outline btn-sm" data-filter="rejected">Rejected</button>
       </div>
     </div>
@@ -251,7 +252,7 @@
   <% } %>
 </div>
 
-<script>
+    <script>
   (function() {
     const filterButtons = document.querySelectorAll('[data-filter]');
     const rows = document.querySelectorAll('tbody tr[data-status]');
@@ -262,7 +263,11 @@
         btn.classList.toggle(activeClass, btn.dataset.filter === status);
       });
       rows.forEach(row => {
-        row.style.display = row.dataset.status === status ? '' : 'none';
+        if (status === 'all') {
+          row.style.display = '';
+        } else {
+          row.style.display = row.dataset.status === status ? '' : 'none';
+        }
       });
     }
 
@@ -270,7 +275,8 @@
       button.addEventListener('click', () => setFilter(button.dataset.filter));
     });
 
-    setFilter('accepted');
+    // Default: show all applications
+    setFilter('all');
   })();
 </script>
 
