@@ -13,8 +13,8 @@ exports.dashboard = async (req, res) => {
   try {
     const [rows] = await db.query(`
       SELECT 
-        (SELECT COUNT(*) FROM business_profiles) AS total_businesses,
-        (SELECT COUNT(*) FROM student_profiles) AS total_students,
+        (SELECT COUNT(*) FROM business) AS total_businesses,
+        (SELECT COUNT(*) FROM student) AS total_students,
         (SELECT COUNT(*) FROM tasks) AS total_tasks,
         (SELECT COUNT(*) FROM applications) AS total_applications,
         (SELECT COUNT(*) FROM applications WHERE status = 'accepted') AS accepted_applications,
@@ -46,8 +46,8 @@ exports.managementSummary = async (req, res) => {
     const [rows] = await db.query(
       `
       SELECT 
-        (SELECT COUNT(*) FROM business_profiles) AS total_businesses,
-        (SELECT COUNT(*) FROM student_profiles) AS total_students,
+        (SELECT COUNT(*) FROM business) AS total_businesses,
+        (SELECT COUNT(*) FROM student) AS total_students,
         (SELECT COUNT(*) FROM tasks WHERE status = 'open' AND posted_at BETWEEN $1 AND $2) AS open_tasks,
         (SELECT COUNT(*) FROM tasks WHERE status = 'in_progress' AND posted_at BETWEEN $1 AND $2) AS in_progress_tasks,
         (SELECT COUNT(*) FROM tasks WHERE status = 'closed' AND posted_at BETWEEN $1 AND $2) AS closed_tasks,
@@ -88,7 +88,7 @@ exports.studentSummary = async (req, res) => {
     const [rows] = await db.query(
       `
       SELECT 
-        (SELECT COUNT(*) FROM student_profiles) AS total_students,
+        (SELECT COUNT(*) FROM student) AS total_students,
         (SELECT COUNT(DISTINCT student_id) FROM applications WHERE applied_at BETWEEN $1 AND $2) AS active_students,
         (SELECT COUNT(*) FROM applications WHERE applied_at BETWEEN $1 AND $2) AS total_applications,
         (SELECT COUNT(*) FROM applications WHERE status = 'accepted' AND applied_at BETWEEN $1 AND $2) AS accepted_applications,
@@ -206,7 +206,7 @@ exports.industrySummary = async (req, res) => {
         bp.industry,
         COUNT(DISTINCT bp.profile_id) AS total_businesses,
         COUNT(t.task_id) AS total_tasks
-      FROM business_profiles bp
+      FROM business bp
       LEFT JOIN tasks t 
         ON bp.profile_id = t.business_id 
        AND t.posted_at BETWEEN $1 AND $2
@@ -245,8 +245,8 @@ exports.combinedSummary = async (req, res) => {
     const [management] = await db.query(
       `
       SELECT 
-        (SELECT COUNT(*) FROM business_profiles) AS total_businesses,
-        (SELECT COUNT(*) FROM student_profiles) AS total_students,
+        (SELECT COUNT(*) FROM business) AS total_businesses,
+        (SELECT COUNT(*) FROM student) AS total_students,
         (SELECT COUNT(*) FROM tasks WHERE posted_at BETWEEN $1 AND $2) AS total_tasks,
         (SELECT COUNT(*) FROM applications WHERE applied_at BETWEEN $1 AND $2) AS total_applications,
         (SELECT COUNT(*) FROM applications WHERE status = 'accepted' AND applied_at BETWEEN $1 AND $2) AS accepted_applications,
@@ -259,7 +259,7 @@ exports.combinedSummary = async (req, res) => {
     const [student] = await db.query(
       `
       SELECT 
-        (SELECT COUNT(*) FROM student_profiles) AS total_students,
+        (SELECT COUNT(*) FROM student) AS total_students,
         (SELECT COUNT(*) FROM applications WHERE applied_at BETWEEN $1 AND $2) AS total_applications,
         (SELECT COUNT(*) FROM applications WHERE status = 'accepted' AND applied_at BETWEEN $1 AND $2) AS accepted_applications,
         (SELECT COUNT(*) FROM applications WHERE status = 'rejected' AND applied_at BETWEEN $1 AND $2) AS rejected_applications,
@@ -286,7 +286,7 @@ exports.combinedSummary = async (req, res) => {
         bp.industry,
         COUNT(DISTINCT bp.profile_id) AS total_businesses,
         COUNT(t.task_id) AS total_tasks
-      FROM business_profiles bp
+      FROM business bp
       LEFT JOIN tasks t 
         ON bp.user_id = t.business_id 
        AND t.posted_at BETWEEN $1 AND $2
@@ -326,8 +326,8 @@ exports.exportReportsPDF = async (req, res) => {
     const [managementRows] = await db.query(
       `
       SELECT 
-        (SELECT COUNT(*) FROM business_profiles) AS total_businesses,
-        (SELECT COUNT(*) FROM student_profiles) AS total_students,
+        (SELECT COUNT(*) FROM business) AS total_businesses,
+        (SELECT COUNT(*) FROM student) AS total_students,
         (SELECT COUNT(*) FROM tasks WHERE posted_at BETWEEN $1 AND $2) AS total_tasks,
         (SELECT COUNT(*) FROM applications WHERE applied_at BETWEEN $1 AND $2) AS total_applications,
         (SELECT COUNT(*) FROM applications WHERE status = 'accepted' AND applied_at BETWEEN $1 AND $2) AS accepted_applications,
@@ -340,7 +340,7 @@ exports.exportReportsPDF = async (req, res) => {
     const [studentRows] = await db.query(
       `
       SELECT 
-        (SELECT COUNT(*) FROM student_profiles) AS total_students,
+        (SELECT COUNT(*) FROM student) AS total_students,
         (SELECT COUNT(*) FROM applications WHERE applied_at BETWEEN $1 AND $2) AS total_applications,
         (SELECT COUNT(*) FROM applications WHERE status = 'accepted' AND applied_at BETWEEN $1 AND $2) AS accepted_applications,
         (SELECT COUNT(*) FROM applications WHERE status = 'rejected' AND applied_at BETWEEN $1 AND $2) AS rejected_applications,
@@ -367,7 +367,7 @@ exports.exportReportsPDF = async (req, res) => {
         bp.industry,
         COUNT(DISTINCT bp.profile_id) AS total_businesses,
         COUNT(t.task_id) AS total_tasks
-      FROM business_profiles bp
+      FROM business bp
       LEFT JOIN tasks t 
         ON bp.profile_id = t.business_id 
        AND t.posted_at BETWEEN $1 AND $2

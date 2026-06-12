@@ -10,7 +10,7 @@ exports.getDashboard = async (req, res) => {
   const user_id = req.session.user.user_id;
   try {
     const [profileRows] = await db.query(
-      "SELECT * FROM student_profiles WHERE user_id = $1",
+      "SELECT * FROM student WHERE user_id = $1",
       [user_id],
     );
     const profile = profileRows[0];
@@ -27,7 +27,7 @@ exports.getDashboard = async (req, res) => {
       `SELECT a.*, t.title, t.required_skill, t.task_type, t.max_applicants, t.min_skill_score, bp.company_name
              FROM applications a
              JOIN tasks t ON a.task_id = t.task_id
-             JOIN business_profiles bp ON t.business_id = bp.profile_id
+             JOIN business bp ON t.business_id = bp.profile_id
              WHERE a.student_id = $1
              ORDER BY a.applied_at DESC`,
       [profile.profile_id],
@@ -41,7 +41,7 @@ exports.getDashboard = async (req, res) => {
                 ELSE NULL
               END AS slots_remaining
        FROM tasks t
-       JOIN business_profiles bp ON t.business_id = bp.profile_id
+       JOIN business bp ON t.business_id = bp.profile_id
        LEFT JOIN (
            SELECT task_id, COUNT(*) AS total_accepted
            FROM applications
@@ -98,7 +98,7 @@ exports.getDashboard = async (req, res) => {
    FROM submissions s
    JOIN applications a ON s.application_id = a.application_id
    JOIN tasks t ON a.task_id = t.task_id
-   JOIN business_profiles bp ON t.business_id = bp.profile_id
+   JOIN business bp ON t.business_id = bp.profile_id
    WHERE a.student_id = $1
    ORDER BY s.submitted_at DESC`,
       [profile.profile_id],
@@ -171,7 +171,7 @@ exports.getApply = async (req, res) => {
                 ELSE NULL
               END AS slots_remaining
        FROM tasks t
-       JOIN business_profiles bp ON t.business_id = bp.profile_id
+       JOIN business bp ON t.business_id = bp.profile_id
        LEFT JOIN (
            SELECT task_id, COUNT(*) AS total_accepted
            FROM applications
@@ -410,10 +410,9 @@ exports.getEditProfile = async (req, res) => {
   console.log("Hit /student/profile/edit route");
   const user_id = req.session.user.user_id;
   try {
-    const [pRows] = await db.query(
-      "SELECT * FROM student_profiles WHERE user_id = $1",
-      [user_id],
-    );
+    const [pRows] = await db.query("SELECT * FROM student WHERE user_id = $1", [
+      user_id,
+    ]);
     const profile = pRows[0];
     res.render("edit_student_profile", {
       user: req.session.user,
@@ -445,7 +444,7 @@ exports.updateProfile = async (req, res) => {
 
   try {
     await db.query(
-      `UPDATE student_profiles 
+      `UPDATE student 
        SET first_name=$1, last_name=$2, institution=$3, course=$4, bio=$5, github_username=$6,
            profile_pic_url = COALESCE($7, profile_pic_url)
        WHERE profile_id=$8`,
@@ -478,7 +477,7 @@ exports.deleteProfile = async (req, res) => {
   try {
     // Step 1: Get the user_id before deleting the profile
     const [rows] = await db.query(
-      "SELECT user_id FROM student_profiles WHERE profile_id = $1",
+      "SELECT user_id FROM student WHERE profile_id = $1",
       [student_id],
     );
     if (!rows.length) {
@@ -501,9 +500,7 @@ exports.deleteProfile = async (req, res) => {
     ]);
 
     // Step 4: Delete student profile
-    await db.query("DELETE FROM student_profiles WHERE profile_id = $1", [
-      student_id,
-    ]);
+    await db.query("DELETE FROM student WHERE profile_id = $1", [student_id]);
 
     // Step 5: Delete the user account itself
     await db.query("DELETE FROM users WHERE user_id = $1", [user_id]);
@@ -525,7 +522,7 @@ exports.getSummaryReport = async (req, res) => {
   try {
     // Get student profile_id
     const [profileRows] = await db.query(
-      "SELECT profile_id, first_name, last_name, institution, course FROM student_profiles WHERE user_id = $1",
+      "SELECT profile_id, first_name, last_name, institution, course FROM student WHERE user_id = $1",
       [user_id],
     );
     const profile = profileRows[0];
@@ -570,7 +567,7 @@ exports.getSummaryReport = async (req, res) => {
       `SELECT a.application_id, a.status, a.applied_at, t.title, bp.company_name
        FROM applications a
        JOIN tasks t ON a.task_id = t.task_id
-       JOIN business_profiles bp ON t.business_id = bp.profile_id
+       JOIN business bp ON t.business_id = bp.profile_id
        WHERE a.student_id = $1 AND a.applied_at BETWEEN $2 AND $3
        ORDER BY a.applied_at DESC
        LIMIT 5`,
@@ -600,7 +597,7 @@ exports.exportSummaryPDF = async (req, res) => {
   try {
     // Get student profile
     const [profileRows] = await db.query(
-      "SELECT profile_id, first_name, last_name, institution, course FROM student_profiles WHERE user_id = $1",
+      "SELECT profile_id, first_name, last_name, institution, course FROM student WHERE user_id = $1",
       [user_id],
     );
     const profile = profileRows[0];
@@ -645,7 +642,7 @@ exports.exportSummaryPDF = async (req, res) => {
       `SELECT a.application_id, a.status, a.applied_at, t.title, bp.company_name
        FROM applications a
        JOIN tasks t ON a.task_id = t.task_id
-       JOIN business_profiles bp ON t.business_id = bp.profile_id
+       JOIN business bp ON t.business_id = bp.profile_id
        WHERE a.student_id = $1 AND a.applied_at BETWEEN $2 AND $3
        ORDER BY a.applied_at DESC
        LIMIT 5`,
